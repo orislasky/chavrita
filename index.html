@@ -1,0 +1,1972 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>כלי לימוד תורני</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Frank+Ruhl+Libre:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#f2f3f7; --surface:#ffffff; --border:rgba(0,0,0,.08);
+      --text:#15151a; --text2:#6e6e78; --accent:#0a84ff; --accent2:#5e5ce6;
+      --shadow:0 8px 30px rgba(20,20,40,.08); --shadow-lg:0 18px 50px rgba(20,20,40,.14);
+      --radius:18px;
+      --serif:'Frank Ruhl Libre','David Libre',serif;
+    }
+    html { scroll-behavior:smooth; }
+    body {
+      font-family:'Heebo',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      color:var(--text); direction:rtl; min-height:100vh;
+      background:
+        radial-gradient(1100px 600px at 90% -8%, rgba(94,92,230,.10), transparent 60%),
+        radial-gradient(900px 600px at -5% 10%, rgba(10,132,255,.10), transparent 55%),
+        var(--bg);
+      background-attachment:fixed;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar { width:11px; height:11px; }
+    ::-webkit-scrollbar-thumb { background:rgba(0,0,0,.18); border-radius:10px; border:3px solid transparent; background-clip:content-box; }
+    ::-webkit-scrollbar-thumb:hover { background:rgba(0,0,0,.32); background-clip:content-box; }
+    ::-webkit-scrollbar-track { background:transparent; }
+
+    nav {
+      background:rgba(255,255,255,.55);
+      backdrop-filter:saturate(200%) blur(26px);
+      -webkit-backdrop-filter:saturate(200%) blur(26px);
+      border-bottom:1px solid rgba(255,255,255,.4);
+      box-shadow:0 1px 0 rgba(0,0,0,.05), 0 8px 30px rgba(20,20,40,.05);
+      display:flex; align-items:center; gap:8px; padding:0 24px; height:62px;
+      position:sticky; top:0; z-index:90;
+    }
+    nav .logo { font-size:1.3rem; font-weight:800; margin-left:auto; letter-spacing:-.5px;
+      background:linear-gradient(120deg,#0a84ff,#5e5ce6 60%,#bf5af2);
+      -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    /* Liquid-glass segmented control with sliding pill */
+    .nav-tabs {
+      position:relative; display:flex; gap:0; padding:4px; border-radius:14px;
+      background:rgba(120,120,140,.14);
+      box-shadow:inset 0 1px 2px rgba(0,0,0,.06);
+    }
+    .nav-pill {
+      position:absolute; top:4px; bottom:4px; left:0; width:0;
+      border-radius:11px; z-index:0;
+      background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.85));
+      box-shadow:0 2px 8px rgba(20,20,40,.16), inset 0 1px 0 rgba(255,255,255,.9), inset 0 0 0 1px rgba(255,255,255,.6);
+      transition:transform .5s cubic-bezier(.34,1.45,.5,1), width .5s cubic-bezier(.34,1.45,.5,1);
+      will-change:transform,width;
+    }
+    .nav-tab {
+      position:relative; z-index:1;
+      padding:8px 20px; border:none; background:transparent; color:var(--text2);
+      cursor:pointer; font-family:inherit; font-size:.92rem; font-weight:600;
+      border-radius:11px; transition:color .35s ease;
+      white-space:nowrap;
+    }
+    .nav-tab:hover { color:var(--text); }
+    .nav-tab.active { color:var(--text); font-weight:700; }
+
+    /* Hero */
+    .hero { max-width:1100px; margin:26px auto 4px; padding:0 24px; }
+    .hero-inner {
+      position:relative; overflow:hidden; border-radius:24px; padding:30px 32px;
+      background:linear-gradient(120deg,#0a84ff 0%,#5e5ce6 55%,#bf5af2 100%);
+      box-shadow:0 18px 44px rgba(94,92,230,.32);
+    }
+    .hero-inner::after {
+      content:''; position:absolute; inset:0;
+      background:radial-gradient(600px 200px at 85% -40%, rgba(255,255,255,.35), transparent 60%);
+      pointer-events:none;
+    }
+    .hero h1 { color:#fff; font-size:1.75rem; font-weight:800; letter-spacing:-.6px; margin-bottom:6px; }
+    .hero p { color:rgba(255,255,255,.92); font-size:1rem; font-weight:500; }
+
+    .screen { display:none; padding:18px 24px 40px; max-width:1100px; margin:0 auto; }
+    .screen.active { display:block; animation:fadeUp .45s cubic-bezier(.22,.61,.36,1); }
+    @keyframes fadeUp { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+
+    .card {
+      background:var(--surface); border:1px solid var(--border); border-radius:var(--radius);
+      padding:24px; box-shadow:var(--shadow); margin-bottom:20px;
+      transition:box-shadow .25s,transform .25s;
+    }
+    .card:hover { box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+    .card-title { font-size:1.12rem; font-weight:700; margin-bottom:16px; color:var(--text); border-bottom:1px solid var(--border); padding-bottom:12px; letter-spacing:-.3px; }
+
+    .btn {
+      display:inline-flex; align-items:center; gap:7px; padding:11px 24px; border:none;
+      border-radius:980px; cursor:pointer; font-family:inherit; font-size:.92rem; font-weight:700;
+      transition:transform .12s,box-shadow .22s,filter .2s; letter-spacing:-.2px;
+    }
+    .btn:active { transform:scale(.96); }
+    .btn:disabled { opacity:.35; cursor:not-allowed; box-shadow:none; }
+    .btn-primary { background:linear-gradient(135deg,#0a84ff,#0066d6); color:#fff; box-shadow:0 6px 18px rgba(10,132,255,.36); }
+    .btn-success { background:linear-gradient(135deg,#34d164,#26a64c); color:#fff; box-shadow:0 6px 18px rgba(48,209,88,.34); }
+    .btn-danger  { background:linear-gradient(135deg,#ff453a,#e0241a); color:#fff; box-shadow:0 6px 18px rgba(255,59,48,.34); }
+    .btn-secondary { background:rgba(120,120,140,.14); color:var(--text); }
+    .btn-export { background:linear-gradient(135deg,#6e6ce8,#4f46d6); color:#fff; box-shadow:0 6px 18px rgba(94,92,230,.34); }
+    .btn-record { background:linear-gradient(135deg,#ff453a,#e0241a); color:#fff; box-shadow:0 6px 18px rgba(255,59,48,.34); }
+    .btn-stop   { background:linear-gradient(135deg,#6e6e78,#48484e); color:#fff; }
+    .btn-calibrate { background:linear-gradient(135deg,#0a84ff,#0066d6); color:#fff; box-shadow:0 6px 18px rgba(10,132,255,.34); }
+    .btn-sm { padding:7px 15px; font-size:.82rem; }
+    .btn:hover:not(:disabled) { filter:brightness(1.06); transform:translateY(-1.5px); }
+
+    textarea, input[type="text"], select { width:100%; font-family:inherit; font-size:1rem; border:1.5px solid rgba(0,0,0,.1); border-radius:12px; padding:12px 15px; background:#f6f7fa; color:var(--text); direction:rtl; transition:border-color .2s,box-shadow .2s,background .2s; }
+    textarea:focus, input:focus, select:focus { outline:none; border-color:var(--accent); box-shadow:0 0 0 4px rgba(10,132,255,.16); background:#fff; }
+    textarea { resize:vertical; line-height:1.85; font-family:var(--serif); font-size:1.08rem; }
+    label { display:block; margin-bottom:7px; font-weight:600; font-size:.84rem; color:var(--text2); }
+    .form-row { display:flex; gap:12px; flex-wrap:wrap; margin-bottom:14px; }
+    .form-row > * { flex:1; min-width:160px; }
+
+    .legend { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+    .legend-item { display:flex; align-items:center; gap:6px; font-size:.8rem; font-weight:500; background:#f6f7fa; border:1px solid var(--border); padding:5px 11px; border-radius:980px; transition:transform .15s,box-shadow .15s; }
+    .legend-item:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(0,0,0,.08); }
+    .legend-dot { width:11px; height:11px; border-radius:50%; flex-shrink:0; box-shadow:0 0 0 2px rgba(255,255,255,.6); }
+
+    /* ── Scratch blocks ── */
+    .scratch-stack { display:flex; flex-direction:column; gap:0; margin-bottom:20px; }
+
+    .scratch-block {
+      position: relative;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 13px 18px 13px 16px;
+      color: #fff;
+      font-family: var(--serif);
+      font-size: 1.12rem;
+      line-height: 1.65;
+      cursor: default;
+      border-radius: 12px;
+      margin-bottom: 7px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.16), inset 0 1px 0 rgba(255,255,255,.22);
+      transition: transform .16s, box-shadow .16s, filter .16s;
+      user-select: text;
+      animation: blockIn .4s cubic-bezier(.22,.61,.36,1) both;
+    }
+    @keyframes blockIn { from { opacity:0; transform:translateX(12px) scale(.98); } to { opacity:1; transform:none; } }
+    .scratch-block:hover { filter: brightness(1.07); transform: translateY(-2px) scale(1.005); box-shadow: 0 12px 26px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.22); }
+
+    /* Accent rail on the right edge (RTL) */
+    .scratch-block::before {
+      content:'';
+      position:absolute;
+      top:10px; bottom:10px; right:0;
+      width:4px;
+      background:rgba(255,255,255,.55);
+      border-radius:4px;
+    }
+
+    /* Indent scratch blocks by logical depth (RTL — margin-right) */
+    .sb-kushia, .sb-sheela   { margin-right: 28px; border-right-width: 6px; }
+    .sb-dchiya, .sb-havaamina{ margin-right: 52px; border-right-width: 6px; }
+    .sb-teirutz, .sb-teshuvah{ margin-right: 14px; }
+    .sb-maskana, .sb-teiku   { margin-right: 14px; }
+    .sb-machloket             { margin-right: 14px; }
+
+    /* Hover tooltip showing type name + description */
+    .scratch-block { position:relative; }
+    .scratch-block .block-tooltip {
+      display: none;
+      position: absolute;
+      top: -42px;
+      right: 0;
+      background: #1a1a2e;
+      color: #fff;
+      font-size: .78rem;
+      padding: 5px 12px;
+      border-radius: 6px;
+      white-space: nowrap;
+      z-index: 50;
+      pointer-events: none;
+      box-shadow: 0 2px 8px rgba(0,0,0,.35);
+      direction: rtl;
+    }
+    .scratch-block .block-tooltip::after {
+      content: '';
+      position: absolute;
+      bottom: -6px;
+      right: 16px;
+      border: 6px solid transparent;
+      border-top-color: #1a1a2e;
+      border-bottom: none;
+    }
+    .scratch-block:hover .block-tooltip { display: block; }
+
+    .scratch-block-text { flex:1; direction:rtl; }
+    .scratch-block-label {
+      display:inline-block;
+      background:rgba(255,255,255,.22);
+      backdrop-filter:blur(4px);
+      padding:3px 11px;
+      border-radius:980px;
+      font-family:'Heebo',sans-serif;
+      font-size:.74rem;
+      font-weight:700;
+      letter-spacing:.2px;
+      margin-bottom:5px;
+      white-space:nowrap;
+      box-shadow:inset 0 0 0 1px rgba(255,255,255,.2);
+    }
+    .scratch-block-icon { font-size:1.1rem; flex-shrink:0; margin-top:1px; }
+    .scratch-block select {
+      background:rgba(0,0,0,.25);
+      color:#fff;
+      border:1px solid rgba(255,255,255,.35);
+      border-radius:5px;
+      font-size:.75rem;
+      padding:3px 6px;
+      cursor:pointer;
+      font-family:inherit;
+      direction:rtl;
+      width:auto;
+    }
+    .scratch-block select option { color:#111; background:#fff; }
+
+    /* Per-type colors — 15 types */
+    .sb-kushia      { background:#c0392b; }
+    .sb-teirutz     { background:#1e8449; }
+    .sb-sheela      { background:#e74c3c; }
+    .sb-teshuvah    { background:#27ae60; }
+    .sb-daat        { background:#2471a3; }
+    .sb-mishnah     { background:#0e6655; }
+    .sb-brayta      { background:#6c3483; }
+    .sb-maaseh      { background:#b7770d; }
+    .sb-halacha     { background:#1a5276; }
+    .sb-teiku       { background:#616a6b; }
+    .sb-machloket   { background:#a04000; }
+    .sb-kalvchomer  { background:#4a235a; }
+    .sb-dchiya      { background:#922b21; }
+    .sb-maskana     { background:#1a5276; }
+    .sb-aggadah     { background:#7d6608; }
+    .sb-pasuk       { background:#6e2f1a; }
+    .sb-havaamina   { background:#7f8c8d; }
+    .sb-neutral     { background:#5d6d7e; }
+
+    /* Gemara fetch panel */
+    .sefaria-panel { background:#f9f9fb; border:1px solid rgba(0,0,0,.08); border-radius:12px; padding:18px; margin-bottom:16px; }
+    .sefaria-panel .tractate-row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+    .tractate-row > * { flex:1; min-width:130px; }
+    .fetch-status { margin-top:8px; font-size:.85rem; color:var(--text2); min-height:1.2em; }
+    .fetch-status.error { color:#ff3b30; font-weight:600; }
+    .fetch-status.ok { color:#30d158; font-weight:600; }
+
+    /* Sugya groups */
+    .sugya-group { border:1px solid rgba(0,0,0,.1); border-radius:16px; margin-bottom:20px; overflow:visible; box-shadow:0 2px 12px rgba(0,0,0,.06); }
+    .sugya-header { background:linear-gradient(135deg,#1d1d1f 0%,#3a3a3c 100%); color:#f5f5f7; padding:10px 18px; font-weight:600; font-size:.9rem; display:flex; align-items:center; gap:8px; border-radius:16px 16px 0 0; }
+    .sugya-blocks { padding:12px 14px 6px; background:#fff; border-radius:0 0 16px 16px; }
+
+    /* Setup overlay abort button */
+    .setup-box-header { display:flex; align-items:center; margin-bottom:20px; }
+    .setup-box-header h2 { flex:1; color:var(--text); margin:0; font-size:1.25rem; letter-spacing:-.3px; }
+    .btn-abort { background:rgba(0,0,0,.06); border:none; color:var(--text2); padding:6px 14px; border-radius:980px; cursor:pointer; font-size:.85rem; font-family:inherit; font-weight:500; }
+    .btn-abort:hover { background:#fee2e2; color:#ff3b30; }
+
+    /* Chavruta chat */
+    .chavruta-chat { display:flex; flex-direction:column; gap:10px; max-height:380px; overflow-y:auto; padding:14px; background:rgba(0,0,0,.03); border-radius:14px; margin-top:14px; }
+    .chat-bubble { max-width:78%; padding:11px 15px; border-radius:18px; font-size:.95rem; line-height:1.6; position:relative; }
+    .chat-bubble.speaker-a { background:linear-gradient(135deg,#0a84ff,#0070d6); color:#fff; align-self:flex-end; border-bottom-left-radius:5px; box-shadow:0 3px 12px rgba(10,132,255,.28); }
+    .chat-bubble.speaker-b { background:#ffffff; color:var(--text); align-self:flex-start; border-bottom-right-radius:5px; box-shadow:0 2px 8px rgba(0,0,0,.1); border:1px solid rgba(0,0,0,.06); }
+    .chat-bubble.interim { opacity:.5; font-style:italic; }
+    .bubble-name { font-size:.72rem; font-weight:700; opacity:.75; margin-bottom:4px; }
+
+    /* Live mode cards (modes 2 & 3) */
+    .live-mode-card { border:none; background:linear-gradient(160deg,rgba(255,255,255,.95),rgba(248,248,252,.95)); }
+    .live-mode-header { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+    .live-mode-header .card-title { margin-bottom:0; }
+    .live-badge {
+      font-size:.7rem; font-weight:700; letter-spacing:.5px; padding:3px 10px; border-radius:980px;
+      background:linear-gradient(90deg,#ff3b30,#ff6b35);
+      color:#fff; animation:livePulse 2s infinite;
+    }
+    @keyframes livePulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+    .active-speaker-pill {
+      font-size:.8rem; font-weight:700; padding:4px 12px; border-radius:980px;
+      background:rgba(10,132,255,.1); color:var(--accent); min-width:80px; text-align:center;
+    }
+
+    .last-said-row {
+      display:flex; align-items:baseline; gap:8px; padding:10px 16px; border-radius:14px;
+      background:linear-gradient(135deg,rgba(10,132,255,.06),rgba(94,92,230,.06));
+      border:1px solid rgba(94,92,230,.12); margin-top:12px; font-size:.9rem; line-height:1.55;
+      animation:slideIn .25s ease;
+    }
+    @keyframes slideIn { from{opacity:0;transform:translateY(-4px)} to{opacity:1;transform:none} }
+    .last-said-name { font-weight:700; white-space:nowrap; }
+    .last-said-name.role-rabbi { color:#b45309; }
+    .last-said-name.role-student { color:#4f46e5; }
+    .last-said-name.role-a { color:#0a84ff; }
+    .last-said-name.role-b { color:#16a34a; }
+    .last-said-text { color:var(--text); flex:1; }
+
+    .flowchart-card { border:1px solid rgba(94,92,230,.14); background:linear-gradient(160deg,#fafafa,#f6f6fa); }
+    .flowchart-card .card-title { margin-bottom:0; }
+
+    /* Speaker toggle */
+    .speaker-toggle { display:flex; gap:8px; margin-top:14px; }
+    .spk-btn {
+      flex:1; padding:11px 8px; border:none; border-radius:14px; cursor:pointer;
+      font-family:inherit; font-size:.88rem; font-weight:700; transition:all .2s;
+      opacity:.45; background:rgba(0,0,0,.06); color:var(--text);
+    }
+    .spk-btn.active { opacity:1; transform:scale(1.02); box-shadow:0 4px 14px rgba(0,0,0,.12); }
+    .spk-a.active, .spk-rabbi.active { background:linear-gradient(135deg,#0a84ff,#0060c0); color:#fff; }
+    .spk-b.active  { background:linear-gradient(135deg,#16a34a,#0f7736); color:#fff; }
+    .spk-student.active { background:linear-gradient(135deg,#5e5ce6,#3730a3); color:#fff; }
+
+    /* Recording status bar */
+    .rec-bar { display:flex; align-items:center; gap:12px; padding:12px 18px; border-radius:12px; margin-bottom:14px; font-weight:600; font-size:.9rem; }
+    .rec-bar.idle    { background:#f5f5f7; color:var(--text2); }
+    .rec-bar.active  { background:#fff2f2; color:#c0392b; border:1px solid rgba(255,59,48,.15); }
+    .rec-bar.calibrating { background:#f0f4ff; color:var(--accent); border:1px solid rgba(0,122,255,.15); }
+    .rec-dot { width:10px; height:10px; border-radius:50%; background:#ff3b30; animation:pulse 1s infinite; flex-shrink:0; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
+    .rec-bar.idle .rec-dot { background:#aeaeb2; animation:none; }
+    .rec-bar.calibrating .rec-dot { background:var(--accent); }
+
+    /* Voice level meter */
+    .voice-meter { height:7px; border-radius:980px; background:rgba(0,0,0,.07); overflow:hidden; margin-top:8px; }
+    .voice-meter-fill { height:100%; background:linear-gradient(90deg,#34d164,#0a84ff); width:0%; transition:width .1s; border-radius:980px; }
+
+    /* Calibration wizard */
+    .cal-step { border:1.5px dashed rgba(0,0,0,.14); border-radius:14px; padding:18px; margin-bottom:12px; text-align:center; transition:border-color .25s,background .25s,transform .2s; }
+    .cal-step.done { border-style:solid; border-color:#34d164; background:linear-gradient(135deg,#f0fff4,#eafff0); }
+    .cal-step.active { border-style:solid; border-color:var(--accent); background:linear-gradient(135deg,#eff6ff,#e8f1ff); transform:scale(1.01); }
+    .cal-timer { font-size:2.2rem; font-weight:800; color:var(--accent); margin:8px 0; }
+    .cal-bar { height:9px; border-radius:980px; background:rgba(0,0,0,.08); overflow:hidden; margin-top:10px; }
+    .cal-bar-fill { height:100%; background:linear-gradient(90deg,#0a84ff,#5e5ce6); transition:width .1s; border-radius:980px; }
+    .checkmark { font-size:1.8rem; color:#34d164; }
+
+    /* Setup overlay */
+    .setup-overlay { position:fixed; inset:0; background:rgba(0,0,0,.4); backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px); display:flex; align-items:center; justify-content:center; z-index:100; overflow-y:auto; }
+    .setup-box { background:#ffffff; border-radius:20px; padding:36px; max-width:460px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,.22); direction:rtl; }
+    .setup-box h2 { margin-bottom:18px; color:var(--text); font-size:1.3rem; letter-spacing:-.4px; }
+
+    /* Flowchart */
+    .flowchart-wrapper { background:linear-gradient(160deg,#fafbff,#f7f7fc); border:1px solid rgba(94,92,230,.1); border-radius:16px; padding:24px 20px; overflow-x:auto; min-height:120px; direction:ltr; box-shadow:inset 0 1px 3px rgba(0,0,0,.04); }
+
+    .flex-gap { display:flex; gap:10px; flex-wrap:wrap; }
+    .mt { margin-top:12px; }
+    .empty-state { text-align:center; color:var(--text2); padding:40px 24px; font-size:1rem; font-weight:500; opacity:.7; }
+    .empty-state::before { content:'✨'; display:block; font-size:2rem; margin-bottom:10px; opacity:.6; }
+    .speaker-pill { display:inline-block; padding:4px 12px; border-radius:980px; font-size:.78rem; font-weight:700; }
+    .pill-a { background:#dbe9ff; color:#0a4aa6; }
+    .pill-b { background:#d6f5e0; color:#10663a; }
+
+    /* ════ BRAND / NAV LOGO (Apple gradient style) ════ */
+    .brand { display:flex; align-items:center; gap:10px; margin-left:auto; cursor:pointer; }
+    .brand-logo { width:38px; height:38px; flex-shrink:0; transition:transform .3s; }
+    .brand-logo svg, .home-seal svg { width:100%; height:100%; display:block; }
+    .brand:hover .brand-logo { transform:rotate(-4deg) scale(1.06); }
+    .brand-text { display:flex; flex-direction:column; line-height:1.12; }
+    .brand-text b {
+      font-size:1.12rem; font-weight:800; letter-spacing:-.4px;
+      background:linear-gradient(120deg,#0a84ff,#5e5ce6 60%,#bf5af2);
+      -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .brand-text span { font-size:.64rem; color:var(--text2); font-weight:600; letter-spacing:1.5px; }
+    nav .logo { display:none; }
+
+    /* ── HOME ── */
+    #screen-home { max-width:1040px; }
+    .home-seal { width:96px; height:96px; margin:0 auto 22px; display:block; filter:drop-shadow(0 10px 22px rgba(94,92,230,.35)); animation:sealIn .7s cubic-bezier(.22,.61,.36,1) both; }
+    @keyframes sealIn { from { opacity:0; transform:translateY(-12px) scale(.9); } to { opacity:1; transform:none; } }
+    .home-hero { text-align:center; padding:46px 28px 40px; margin-bottom:30px; }
+    .home-hero h1 {
+      font-size:2.7rem; font-weight:800; letter-spacing:-1px; margin-bottom:12px;
+      background:linear-gradient(120deg,#0a84ff,#5e5ce6 55%,#bf5af2);
+      -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
+    }
+    .home-hero p { color:var(--text2); font-size:1.1rem; font-weight:500; max-width:460px; margin:0 auto; line-height:1.5; }
+
+    .mode-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
+    .mode-card {
+      position:relative; overflow:hidden; cursor:pointer; text-align:center;
+      padding:34px 24px 28px; border-radius:22px;
+      background:var(--surface); border:1px solid var(--border);
+      box-shadow:var(--shadow);
+      transition:transform .28s cubic-bezier(.22,.61,.36,1), box-shadow .28s;
+      animation:fadeUp .55s both;
+    }
+    .mode-card:nth-child(2){ animation-delay:.08s; }
+    .mode-card:nth-child(3){ animation-delay:.16s; }
+    .mode-card::after {
+      content:''; position:absolute; inset:0 0 auto 0; height:4px;
+      background:var(--mc-grad); opacity:0; transition:opacity .28s;
+    }
+    .mode-card:hover { transform:translateY(-7px); box-shadow:var(--shadow-lg); }
+    .mode-card:hover::after { opacity:1; }
+    .mode-card:hover .mode-ic { transform:scale(1.08) rotate(-3deg); }
+    .mode-ic {
+      width:74px; height:74px; margin:0 auto 18px; border-radius:22px;
+      display:flex; align-items:center; justify-content:center; font-size:2rem;
+      background:var(--mc-grad); color:#fff;
+      box-shadow:0 10px 24px var(--mc-glow);
+      transition:transform .3s;
+    }
+    .mode-card h3 { font-size:1.35rem; font-weight:800; letter-spacing:-.4px; color:var(--text); margin-bottom:9px; }
+    .mode-card p { font-size:.92rem; color:var(--text2); line-height:1.6; font-weight:500; }
+    .mode-num { position:absolute; top:16px; right:18px; font-size:1.05rem; font-weight:800; color:var(--text2); opacity:.35; }
+    .mode-go { display:inline-block; margin-top:18px; font-weight:700; font-size:.9rem;
+      background:var(--mc-grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+
+    .mc-gemara   { --mc-grad:linear-gradient(135deg,#0a84ff,#0066d6); --mc-glow:rgba(10,132,255,.34); }
+    .mc-chavruta { --mc-grad:linear-gradient(135deg,#34d164,#1fa64c); --mc-glow:rgba(48,209,88,.32); }
+    .mc-shiur    { --mc-grad:linear-gradient(135deg,#ff9f0a,#ff6a00); --mc-glow:rgba(255,159,10,.32); }
+
+    @media(max-width:760px){ .mode-grid{grid-template-columns:1fr;} .home-hero h1{font-size:2.1rem;} }
+    @media(max-width:640px){ nav{flex-wrap:wrap;height:auto;padding:10px;} .nav-tabs{overflow-x:auto;} }
+  </style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute">
+  <defs>
+    <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a84ff"/><stop offset="0.55" stop-color="#5e5ce6"/><stop offset="1" stop-color="#bf5af2"/>
+    </linearGradient>
+    <mask id="bookBite">
+      <rect width="64" height="64" fill="white"/>
+      <circle cx="47" cy="21" r="9" fill="black"/>
+    </mask>
+  </defs>
+</svg>
+
+<template id="logoSVG">
+  <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+    <rect x="3" y="3" width="58" height="58" rx="17" fill="url(#brandGrad)"/>
+    <g mask="url(#bookBite)">
+      <path d="M32 23 C 35 19, 31.5 17, 33 13 C 37 16, 36 20.5, 32 23 Z" fill="#fff" opacity=".95"/>
+      <path d="M32 28 C 25.5 24.5, 17.5 25, 12.5 27.5 L 12.5 47 C 17.5 44.5, 25.5 44, 32 47.5 Z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>
+      <path d="M32 28 C 38.5 24.5, 46.5 25, 51.5 27.5 L 51.5 47 C 46.5 44.5, 38.5 44, 32 47.5 Z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>
+      <line x1="32" y1="28" x2="32" y2="47.5" stroke="#fff" stroke-width="2.4"/>
+      <line x1="18" y1="31.5" x2="27" y2="31" stroke="#fff" stroke-width="1.2" opacity=".6"/>
+      <line x1="37" y1="31" x2="46" y2="31.5" stroke="#fff" stroke-width="1.2" opacity=".6"/>
+      <line x1="18" y1="35.5" x2="27" y2="35" stroke="#fff" stroke-width="1.2" opacity=".6"/>
+      <line x1="37" y1="35" x2="46" y2="35.5" stroke="#fff" stroke-width="1.2" opacity=".6"/>
+    </g>
+  </svg>
+</template>
+
+<nav>
+  <div class="nav-tabs">
+    <span class="nav-pill" id="nav-pill"></span>
+    <button class="nav-tab active" id="tab-home" onclick="switchScreen('home',this)">בית</button>
+    <button class="nav-tab" id="tab-mode1" onclick="switchScreen('mode1',this)">📖 גמרא</button>
+    <button class="nav-tab" id="tab-mode2" onclick="switchScreen('mode2',this)">🤝 חברותא</button>
+    <button class="nav-tab" id="tab-mode3" onclick="switchScreen('mode3',this)">🎓 שיעור</button>
+  </div>
+  <div class="brand" onclick="goHome()">
+    <span class="brand-logo" id="nav-logo"></span>
+    <span class="brand-text"><b>בית המדרש</b><span>כלי לימוד תורני</span></span>
+  </div>
+  <div class="logo">כלי לימוד תורני</div>
+</nav>
+
+<!-- Setup overlays (body-level so backdrop-filter blurs the whole page smoothly) -->
+<div id="chavruta-setup" class="setup-overlay" style="display:none">
+  <div class="setup-box">
+    <div class="setup-box-header">
+      <h2>🤝 הגדרת חברותא</h2>
+      <button class="btn-abort" onclick="abortChavruta()">✕ בטל</button>
+    </div>
+
+    <div id="cv-step-names">
+      <div style="margin-bottom:12px">
+        <label>שם הלומד א׳:</label>
+        <input type="text" id="chavruta-name-a" placeholder="ראובן" />
+      </div>
+      <div style="margin-bottom:12px">
+        <label>שם הלומד ב׳:</label>
+        <input type="text" id="chavruta-name-b" placeholder="שמעון" />
+      </div>
+      <div style="margin-bottom:20px">
+        <label>נושא הלימוד (רשות):</label>
+        <input type="text" id="chavruta-topic" placeholder="בבא קמא דף ב..." />
+      </div>
+      <button class="btn btn-calibrate" style="width:100%" onclick="startChavrutaCalibration()">🎙 המשך לזיהוי קולות</button>
+    </div>
+
+    <div id="cv-step-cal" style="display:none">
+      <p style="margin-bottom:14px;font-size:.9rem;color:#555">כל לומד ידבר 4 שניות כדי שהמערכת תזהה את קולו</p>
+      <div id="cal-step-a" class="cal-step">
+        <div id="cal-a-name" style="font-weight:700;margin-bottom:8px">לומד א׳</div>
+        <div id="cal-a-status">ממתין...</div>
+        <div class="cal-bar"><div id="cal-a-bar" class="cal-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div id="cal-step-b" class="cal-step">
+        <div id="cal-b-name" style="font-weight:700;margin-bottom:8px">לומד ב׳</div>
+        <div id="cal-b-status">ממתין...</div>
+        <div class="cal-bar"><div id="cal-b-bar" class="cal-bar-fill" style="width:0%"></div></div>
+      </div>
+      <div style="margin-top:16px">
+        <button class="btn btn-calibrate" id="btn-cal-a" style="width:100%;margin-bottom:8px" onclick="calibrateSpeaker('chavruta','a')">🎙 זהה קול לומד א׳</button>
+        <button class="btn btn-calibrate" id="btn-cal-b" style="width:100%;margin-bottom:8px" onclick="calibrateSpeaker('chavruta','b')" disabled>🎙 זהה קול לומד ב׳</button>
+        <button class="btn btn-success" id="btn-start-chavruta" style="width:100%" onclick="beginChavruta()" disabled>▶ התחל חברותא</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="lecture-setup" class="setup-overlay" style="display:none">
+  <div class="setup-box">
+    <div class="setup-box-header">
+      <h2>🎓 הגדרת שיעור</h2>
+      <button class="btn-abort" onclick="abortLecture()">✕ בטל</button>
+    </div>
+
+    <div>
+      <div style="margin-bottom:12px">
+        <label>שם הרב:</label>
+        <input type="text" id="lecture-rabbi-name" placeholder="הרב ישראל לוי" />
+      </div>
+      <div style="margin-bottom:20px">
+        <label>נושא השיעור:</label>
+        <input type="text" id="lecture-topic" placeholder="הלכות שבת..." />
+      </div>
+      <button class="btn btn-success" style="width:100%" onclick="beginLecture()">▶ התחל שיעור</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ HOME ═══ -->
+<div id="screen-home" class="screen active">
+  <div class="home-hero">
+    <span class="home-seal" id="home-seal"></span>
+    <h1>בית המדרש הדיגיטלי</h1>
+    <p>כלי חכם ללימוד תורה — ניתוח סוגיות, חברותא, ושיעור, בזמן אמת</p>
+  </div>
+
+  <div class="mode-grid">
+    <div class="mode-card mc-gemara" onclick="switchScreen('mode1', document.getElementById('tab-mode1'))">
+      <div class="mode-num">01</div>
+      <div class="mode-ic">📖</div>
+      <h3>ניתוח גמרא</h3>
+      <p>טען דף מספריא, וראה את הסוגיא מחולקת לבלוקים צבעוניים ותרשים זרימה לוגי</p>
+      <span class="mode-go">פתח →</span>
+    </div>
+    <div class="mode-card mc-chavruta" onclick="switchScreen('mode2', document.getElementById('tab-mode2'))">
+      <div class="mode-num">02</div>
+      <div class="mode-ic">🤝</div>
+      <h3>חברותא</h3>
+      <p>הקלטה חיה של שני לומדים, זיהוי דובר אוטומטי, ומפת שיחה מתעדכנת בזמן אמת</p>
+      <span class="mode-go">פתח →</span>
+    </div>
+    <div class="mode-card mc-shiur" onclick="switchScreen('mode3', document.getElementById('tab-mode3'))">
+      <div class="mode-num">03</div>
+      <div class="mode-ic">🎓</div>
+      <h3>שיעור</h3>
+      <p>תרשים זרימה חי של השיעור, ושאלות התלמידים מוצגות בסוף</p>
+      <span class="mode-go">פתח →</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODE 1 – GEMARA ═══ -->
+<div id="screen-mode1" class="screen">
+
+  <!-- Sefaria fetch panel -->
+  <div class="card">
+    <div class="card-title">📖 טעינה מספריא — בחר מסכת ודף</div>
+    <div class="sefaria-panel">
+      <div class="tractate-row">
+        <div>
+          <label>מסכת</label>
+          <select id="tractate-select">
+            <option value="Berakhot">ברכות</option>
+            <option value="Shabbat">שבת</option>
+            <option value="Eruvin">עירובין</option>
+            <option value="Pesachim">פסחים</option>
+            <option value="Yoma">יומא</option>
+            <option value="Sukkah">סוכה</option>
+            <option value="Beitzah">ביצה</option>
+            <option value="Rosh Hashanah">ראש השנה</option>
+            <option value="Taanit">תענית</option>
+            <option value="Megillah">מגילה</option>
+            <option value="Moed Katan">מועד קטן</option>
+            <option value="Chagigah">חגיגה</option>
+            <option value="Yevamot">יבמות</option>
+            <option value="Ketubot">כתובות</option>
+            <option value="Nedarim">נדרים</option>
+            <option value="Nazir">נזיר</option>
+            <option value="Sotah">סוטה</option>
+            <option value="Gittin">גיטין</option>
+            <option value="Kiddushin">קידושין</option>
+            <option value="Bava Kamma">בבא קמא</option>
+            <option value="Bava Metzia">בבא מציעא</option>
+            <option value="Bava Batra">בבא בתרא</option>
+            <option value="Sanhedrin">סנהדרין</option>
+            <option value="Makkot">מכות</option>
+            <option value="Shevuot">שבועות</option>
+            <option value="Avodah Zarah">עבודה זרה</option>
+            <option value="Horayot">הוריות</option>
+            <option value="Zevachim">זבחים</option>
+            <option value="Menachot">מנחות</option>
+            <option value="Chullin">חולין</option>
+            <option value="Niddah">נדה</option>
+          </select>
+        </div>
+        <div>
+          <label>דף</label>
+          <select id="page-select"></select>
+        </div>
+        <div>
+          <label>עמוד</label>
+          <select id="amud-select">
+            <option value="a">א</option>
+            <option value="b">ב</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:flex-end">
+          <button class="btn btn-primary" style="width:100%" onclick="fetchSefaria()">📥 טען מספריא</button>
+        </div>
+      </div>
+      <div id="fetch-status" class="fetch-status"></div>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:12px;color:var(--text2);margin:16px 0;font-size:.82rem;font-weight:600">
+      <span style="flex:1;height:1px;background:var(--border)"></span>או הכנס טקסט ידנית<span style="flex:1;height:1px;background:var(--border)"></span>
+    </div>
+    <textarea id="gemara-input" rows="5" placeholder="הדבק כאן טקסט גמרא..."></textarea>
+    <div class="flex-gap mt">
+      <button class="btn btn-primary" onclick="analyzeGemara()">🔍 נתח אוטומטי</button>
+      <button class="btn btn-secondary" onclick="clearGemara()">🗑 נקה</button>
+    </div>
+  </div>
+
+  <!-- Legend -->
+  <div class="card" id="gemara-legend-card" style="display:none">
+    <div class="card-title">מקרא סוגי המימרות</div>
+    <div class="legend" id="gemara-legend"></div>
+  </div>
+
+  <!-- Scratch blocks -->
+  <div id="gemara-segments-card" class="card" style="display:none">
+    <div class="card-title">בלוקים מסווגים — לחץ על הסוג לשינוי ידני</div>
+    <div id="gemara-segments" class="scratch-stack"></div>
+    <div class="flex-gap mt">
+      <button class="btn btn-success" onclick="buildGemaraFlowchart()">📊 צור תרשים זרימה</button>
+      <button class="btn btn-export" onclick="exportSection('gemara-flowchart-wrap')">⬇ ייצא PDF</button>
+    </div>
+  </div>
+
+  <div id="gemara-flowchart-wrap" class="card" style="display:none">
+    <div class="card-title">תרשים זרימה לוגי</div>
+    <div id="gemara-flowchart" class="flowchart-wrapper"></div>
+  </div>
+</div>
+
+<!-- ═══ MODE 2 – CHAVRUTA ═══ -->
+<div id="screen-mode2" class="screen">
+  <div class="card live-mode-card">
+    <div class="live-mode-header">
+      <div class="card-title" id="chavruta-title">🤝 חברותא</div>
+      <span class="live-badge" id="cv-live-badge" style="display:none">● חי</span>
+    </div>
+
+    <div id="chavruta-rec-bar" class="rec-bar idle">
+      <div class="rec-dot"></div>
+      <div id="chavruta-rec-status">לחץ "התחל הקלטה" להתחלה</div>
+      <div style="flex:1"></div>
+      <div class="active-speaker-pill" id="chavruta-active-speaker"></div>
+    </div>
+    <div class="voice-meter"><div class="voice-meter-fill" id="chavruta-meter"></div></div>
+
+    <div id="cv-last-said" class="last-said-row" style="display:none"></div>
+
+    <div id="chavruta-chat" class="chavruta-chat" style="display:none">
+      <div class="empty-state">השיחה תופיע כאן בזמן אמת...</div>
+    </div>
+
+    <div class="flex-gap mt">
+      <button class="btn btn-record" id="btn-cv-record" onclick="toggleChavrutaRecording()">🎙 התחל הקלטה</button>
+      <button class="btn btn-export" onclick="exportSection('chavruta-flowchart-wrap')">⬇ ייצא PDF</button>
+      <button class="btn btn-secondary" onclick="resetChavruta()">🔄 חברותא חדשה</button>
+    </div>
+  </div>
+
+  <div id="chavruta-flowchart-wrap" class="card flowchart-card" style="display:none">
+    <div class="live-mode-header">
+      <div class="card-title">מפת שיחת חברותא</div>
+      <span class="live-badge">● מתעדכן</span>
+    </div>
+    <div id="chavruta-flowchart" class="flowchart-wrapper"></div>
+  </div>
+</div>
+
+<!-- ═══ MODE 3 – LECTURE ═══ -->
+<div id="screen-mode3" class="screen">
+  <div class="card live-mode-card">
+    <div class="live-mode-header">
+      <div class="card-title" id="lecture-title">🎓 שיעור</div>
+      <span class="live-badge" id="lec-live-badge" style="display:none">● חי</span>
+    </div>
+
+    <div id="lecture-rec-bar" class="rec-bar idle">
+      <div class="rec-dot"></div>
+      <div id="lecture-rec-status">לחץ "התחל הקלטה" להתחלה</div>
+      <div style="flex:1"></div>
+      <div class="active-speaker-pill" id="lecture-active-speaker"></div>
+    </div>
+    <div class="voice-meter"><div class="voice-meter-fill" id="lecture-meter"></div></div>
+
+    <div id="lec-last-said" class="last-said-row" style="display:none"></div>
+
+    <div class="flex-gap mt">
+      <button class="btn btn-record" id="btn-lec-record" onclick="toggleLectureRecording()">🎙 התחל הקלטה</button>
+      <button class="btn btn-export" onclick="exportSection('lecture-flowchart-wrap')">⬇ ייצא PDF</button>
+      <button class="btn btn-secondary" onclick="resetLecture()">🔄 שיעור חדש</button>
+    </div>
+  </div>
+
+  <div id="lecture-flowchart-wrap" class="card flowchart-card" style="display:none">
+    <div class="live-mode-header">
+      <div class="card-title">תרשים השיעור</div>
+      <span class="live-badge">● מתעדכן</span>
+    </div>
+    <div id="lecture-flowchart" class="flowchart-wrapper"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════════════
+   MERMAID INIT
+══════════════════════════════════════════════════════ */
+mermaid.initialize({ startOnLoad:false, theme:'base', themeVariables:{ fontFamily:"'Heebo',sans-serif", fontSize:'14px', primaryColor:'#eef1ff', primaryBorderColor:'#5e5ce6', primaryTextColor:'#15151a', lineColor:'#8e9ab8', edgeLabelBackground:'rgba(255,255,255,.9)', clusterBkg:'#f4f5ff', clusterBorder:'#c0c4e8', titleColor:'#15151a' }, flowchart:{curve:'basis',htmlLabels:true,padding:18,nodeSpacing:50,rankSpacing:60}, securityLevel:'loose' });
+let mermaidCounter = 0;
+const _renderState = {}; // containerId -> {rendering, pending}
+async function renderMermaid(containerId, definition) {
+  const st = _renderState[containerId] || (_renderState[containerId] = { rendering:false, pending:null });
+  // Coalesce: if a render is already in flight for this container, just remember
+  // the latest definition and let the running render pick it up when it finishes.
+  if (st.rendering) { st.pending = definition; return; }
+  st.rendering = true;
+  const container = document.getElementById(containerId);
+  const id = 'md' + (++mermaidCounter);
+  try {
+    const {svg} = await mermaid.render(id, definition);
+    container.innerHTML = svg; // single swap, no intermediate blank → no flicker
+  } catch(e) {
+    container.innerHTML = `<pre style="color:red;font-size:.75rem">שגיאה: ${e.message}</pre>`;
+    console.error(e, definition);
+  } finally {
+    st.rendering = false;
+    if (st.pending !== null && st.pending !== definition) {
+      const next = st.pending; st.pending = null;
+      renderMermaid(containerId, next);
+    } else {
+      st.pending = null;
+    }
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   SCREEN SWITCHING
+══════════════════════════════════════════════════════ */
+function switchScreen(id, btn) {
+  document.querySelectorAll('.setup-overlay').forEach(o => o.style.display = 'none');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  const tab = btn || document.getElementById('tab-' + id);
+  if (tab) { tab.classList.add('active'); movePill(tab); }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Show setup overlay only if the mode hasn't been fully started yet
+  if (id === 'mode2' && !cv.ready) document.getElementById('chavruta-setup').style.display = 'flex';
+  if (id === 'mode3' && !lec.ready) document.getElementById('lecture-setup').style.display = 'flex';
+}
+
+function goHome() { switchScreen('home', document.getElementById('tab-home')); }
+
+/* Liquid-glass sliding nav pill */
+function movePill(tab) {
+  const pill = document.getElementById('nav-pill');
+  if (!pill || !tab) return;
+  pill.style.width = tab.offsetWidth + 'px';
+  pill.style.transform = 'translateX(' + tab.offsetLeft + 'px)';
+}
+window.addEventListener('load', () => {
+  const active = document.querySelector('.nav-tab.active') || document.getElementById('tab-home');
+  movePill(active);
+});
+window.addEventListener('resize', () => {
+  movePill(document.querySelector('.nav-tab.active'));
+});
+
+/* Inject the logo SVG into nav + home seal */
+(function injectLogo() {
+  const tpl = document.getElementById('logoSVG');
+  if (!tpl) return;
+  ['nav-logo', 'home-seal'].forEach(id => {
+    const host = document.getElementById(id);
+    if (host) host.appendChild(tpl.content.cloneNode(true));
+  });
+})();
+
+function abortChavruta() {
+  if (cv.detector) { cv.detector.destroy(); cv.detector = null; }
+  document.getElementById('chavruta-setup').style.display = 'none';
+}
+
+function abortLecture() {
+  if (lec.detector) { lec.detector.destroy(); lec.detector = null; }
+  document.getElementById('lecture-setup').style.display = 'none';
+}
+
+/* ══════════════════════════════════════════════════════
+   EXPORT
+══════════════════════════════════════════════════════ */
+async function exportSection(wrapperId) {
+  const el = document.getElementById(wrapperId);
+  if (!el || el.style.display === 'none') { alert('אנא צור תרשים קודם'); return; }
+  try {
+    const canvas = await html2canvas(el, {scale:2, backgroundColor:'#fff', useCORS:true});
+    const imgData = canvas.toDataURL('image/png');
+    const {jsPDF} = window.jspdf;
+    const pdf = new jsPDF({orientation:'landscape', unit:'mm'});
+    const w = pdf.internal.pageSize.getWidth();
+    const h = (canvas.height * w) / canvas.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, w, h);
+    pdf.save('תרשים-לימוד.pdf');
+  } catch(e) {
+    const canvas = await html2canvas(el, {scale:2, backgroundColor:'#fff'});
+    const a = document.createElement('a');
+    a.download = 'תרשים-לימוד.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   SPEAKER DETECTOR — voice calibration + real-time ID
+══════════════════════════════════════════════════════ */
+class SpeakerDetector {
+  constructor() {
+    this.audioCtx = null;
+    this.analyser = null;
+    this.source   = null;
+    this.stream   = null;
+    this.profiles = {};   // id → {pitch, centroid, zcr}
+    this.meterCb  = null; // callback(0-100) for level meter
+    this._meterRaf = null;
+  }
+
+  async init() {
+    if (this.audioCtx) return;
+    this.stream   = await navigator.mediaDevices.getUserMedia({audio:true, video:false});
+    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    this.analyser = this.audioCtx.createAnalyser();
+    this.analyser.fftSize = 2048;
+    this.source   = this.audioCtx.createMediaStreamSource(this.stream);
+    this.source.connect(this.analyser);
+    this._startMeter();
+  }
+
+  _startMeter() {
+    const buf = new Float32Array(this.analyser.fftSize);
+    const tick = () => {
+      this._meterRaf = requestAnimationFrame(tick);
+      this.analyser.getFloatTimeDomainData(buf);
+      let rms = 0;
+      for (let i = 0; i < buf.length; i++) rms += buf[i]*buf[i];
+      rms = Math.sqrt(rms / buf.length);
+      if (this.meterCb) this.meterCb(Math.min(100, rms * 400));
+    };
+    tick();
+  }
+
+  stopMeter() {
+    if (this._meterRaf) { cancelAnimationFrame(this._meterRaf); this._meterRaf = null; }
+    if (this.meterCb) this.meterCb(0);
+  }
+
+  /* Collect audio features for `durationMs` ms and build a profile */
+  async calibrate(id, durationMs, onProgress) {
+    const sampleRate = this.audioCtx.sampleRate;
+    const bufSize    = this.analyser.fftSize;
+    const timeBuf    = new Float32Array(bufSize);
+    const freqBuf    = new Uint8Array(this.analyser.frequencyBinCount);
+    const samples    = [];
+    const interval   = 100;
+    const steps      = durationMs / interval;
+    let step = 0;
+
+    await new Promise(resolve => {
+      const iv = setInterval(() => {
+        this.analyser.getFloatTimeDomainData(timeBuf);
+        this.analyser.getByteFrequencyData(freqBuf);
+
+        const pitch    = this._autocorrPitch(timeBuf, sampleRate);
+        const centroid = this._spectralCentroid(freqBuf, sampleRate);
+        const zcr      = this._zcr(timeBuf);
+        const rms      = this._rms(timeBuf);
+
+        if (rms > 0.005) samples.push({pitch, centroid, zcr}); // ignore silence
+
+        step++;
+        if (onProgress) onProgress(step / steps);
+        if (step >= steps) { clearInterval(iv); resolve(); }
+      }, interval);
+    });
+
+    if (samples.length < 3) {
+      throw new Error('לא זוהה קול — אנא דבר בקול רם יותר');
+    }
+
+    const mean = arr => arr.reduce((a,b) => a+b, 0) / arr.length;
+    this.profiles[id] = {
+      pitch:    mean(samples.map(s => s.pitch)),
+      centroid: mean(samples.map(s => s.centroid)),
+      zcr:      mean(samples.map(s => s.zcr)),
+      count:    samples.length
+    };
+    return this.profiles[id];
+  }
+
+  /* Return the id of the nearest calibrated speaker, or null */
+  identify() {
+    if (!this.analyser) return null;
+    const sampleRate = this.audioCtx.sampleRate;
+    const timeBuf    = new Float32Array(this.analyser.fftSize);
+    const freqBuf    = new Uint8Array(this.analyser.frequencyBinCount);
+    this.analyser.getFloatTimeDomainData(timeBuf);
+    this.analyser.getByteFrequencyData(freqBuf);
+
+    const rms = this._rms(timeBuf);
+    if (rms < 0.005) return null; // silence
+
+    const pitch    = this._autocorrPitch(timeBuf, sampleRate);
+    const centroid = this._spectralCentroid(freqBuf, sampleRate);
+    const zcr      = this._zcr(timeBuf);
+
+    let bestId = null, bestDist = Infinity;
+    for (const [id, p] of Object.entries(this.profiles)) {
+      // Normalized weighted distance
+      const dp = Math.abs(pitch    - p.pitch)    / (p.pitch    + 1);
+      const dc = Math.abs(centroid - p.centroid) / (p.centroid + 1);
+      const dz = Math.abs(zcr      - p.zcr)      / (p.zcr      + 0.01);
+      const dist = dp * 0.5 + dc * 0.35 + dz * 0.15;
+      if (dist < bestDist) { bestDist = dist; bestId = id; }
+    }
+    return bestId;
+  }
+
+  /* ── DSP helpers ── */
+  _rms(buf) {
+    let s = 0; for (let i = 0; i < buf.length; i++) s += buf[i]*buf[i];
+    return Math.sqrt(s / buf.length);
+  }
+
+  _zcr(buf) {
+    let z = 0;
+    for (let i = 1; i < buf.length; i++) if ((buf[i] >= 0) !== (buf[i-1] >= 0)) z++;
+    return z / buf.length;
+  }
+
+  _spectralCentroid(freqBuf, sampleRate) {
+    let wSum = 0, sum = 0;
+    const binHz = sampleRate / (2 * freqBuf.length);
+    for (let i = 0; i < freqBuf.length; i++) {
+      wSum += freqBuf[i] * (i * binHz);
+      sum  += freqBuf[i];
+    }
+    return sum > 0 ? wSum / sum : 0;
+  }
+
+  _autocorrPitch(buf, sampleRate) {
+    const SIZE = buf.length;
+    const MAX_SAMPLES = Math.floor(sampleRate / 80);
+    const MIN_SAMPLES = Math.floor(sampleRate / 800);
+    let best = -1, bestCorr = -1;
+    let lastCorr = 1;
+    let foundGood = false;
+
+    for (let offset = MIN_SAMPLES; offset < MAX_SAMPLES; offset++) {
+      let corr = 0;
+      for (let i = 0; i < SIZE - offset; i++) corr += buf[i] * buf[i + offset];
+      corr /= SIZE;
+      if (corr > 0.9 && corr > lastCorr && !foundGood) { foundGood = true; }
+      if (foundGood && corr > bestCorr) { bestCorr = corr; best = offset; }
+      else if (foundGood && corr < 0) break;
+      lastCorr = corr;
+    }
+    return best > 0 ? sampleRate / best : 0;
+  }
+
+  destroy() {
+    this.stopMeter();
+    if (this.stream) this.stream.getTracks().forEach(t => t.stop());
+    if (this.audioCtx) this.audioCtx.close();
+    this.audioCtx = null; this.analyser = null; this.source = null; this.stream = null;
+  }
+}
+
+/* ══════════════════════════════════════════════════════
+   SPEECH RECOGNITION HELPER
+══════════════════════════════════════════════════════ */
+function createRecognition(onInterim, onFinal, onEnd) {
+  const Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!Rec) { alert('הדפדפן אינו תומך בזיהוי דיבור. אנא השתמש ב-Chrome.'); return null; }
+  const r = new Rec();
+  r.lang = 'he-IL';
+  r.continuous = true;
+  r.interimResults = true;
+  r.maxAlternatives = 1;
+  r.onresult = e => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript.trim();
+      if (!t) continue;
+      if (e.results[i].isFinal) onFinal(t);
+      else onInterim(t);
+    }
+  };
+  r.onend = () => { if (onEnd) onEnd(); };
+  r.onerror = e => console.warn('Speech error:', e.error);
+  return r;
+}
+
+/* ══════════════════════════════════════════════════════
+   MODE 1 – GEMARA  (15 types + Sefaria fetch)
+══════════════════════════════════════════════════════ */
+
+// ── Type definitions ──────────────────────────────────
+const GEMARA_TYPES = {
+  kushia:     { he:'קושיא',      en:'Question/Challenge',  icon:'❓', cls:'sb-kushia',    flowShape:['{{','}}'],  color:'#c0392b' },
+  teirutz:    { he:'תירוץ',      en:'Answer/Resolution',   icon:'✅', cls:'sb-teirutz',   flowShape:['([','])'],  color:'#1e8449' },
+  sheela:     { he:'שאלה',       en:'Inquiry',             icon:'🔵', cls:'sb-sheela',    flowShape:['{{','}}'],  color:'#e74c3c' },
+  teshuvah:   { he:'תשובה',      en:'Response',            icon:'💬', cls:'sb-teshuvah',  flowShape:['([','])'],  color:'#27ae60' },
+  daat:       { he:'דעה / שיטה', en:'Opinion / Position',  icon:'🔷', cls:'sb-daat',      flowShape:['[/','\\]'], color:'#2471a3' },
+  mishnah:    { he:'משנה',       en:'Mishnah Citation',    icon:'📜', cls:'sb-mishnah',   flowShape:['[(',')] '], color:'#0e6655' },
+  brayta:     { he:'ברייתא',     en:'Baraita',             icon:'📗', cls:'sb-brayta',    flowShape:['[(',')] '], color:'#6c3483' },
+  maaseh:     { he:'מעשה',       en:'Story / Precedent',   icon:'📖', cls:'sb-maaseh',    flowShape:['[\\','\\]'],color:'#b7770d' },
+  halacha:    { he:'הלכה',       en:'Legal Ruling',        icon:'⚖️', cls:'sb-halacha',   flowShape:['[=','=]'],  color:'#1a5276' },
+  teiku:      { he:'תיקו',       en:'Unresolved',          icon:'🔘', cls:'sb-teiku',     flowShape:['{{','}}'],  color:'#616a6b' },
+  machloket:  { he:'מחלוקת',     en:'Dispute',             icon:'⚡', cls:'sb-machloket', flowShape:['[/','\\]'], color:'#a04000' },
+  kalvchomer: { he:'קל וחומר',   en:'A Fortiori',          icon:'📐', cls:'sb-kalvchomer',flowShape:['[\\','\\]'],color:'#4a235a' },
+  dchiya:     { he:'דחייה',      en:'Rejection',           icon:'❌', cls:'sb-dchiya',    flowShape:['{{','}}'],  color:'#922b21' },
+  maskana:    { he:'מסקנה',      en:'Conclusion',          icon:'🏁', cls:'sb-maskana',   flowShape:['([','])'],  color:'#154360' },
+  aggadah:    { he:'אגדה',       en:'Aggadah / Story',     icon:'✨', cls:'sb-aggadah',   flowShape:['[\\','\\]'],color:'#7d6608' },
+  pasuk:      { he:'פסוק / מקרא',en:'Biblical Verse',      icon:'📙', cls:'sb-pasuk',     flowShape:['[(',')] '], color:'#6e2f1a' },
+  havaamina:  { he:'הוה אמינא',  en:'Initial Assumption',  icon:'💭', cls:'sb-havaamina', flowShape:['[/','\\]'], color:'#7f8c8d' },
+  neutral:    { he:'כללי',       en:'General',             icon:'▪️', cls:'sb-neutral',   flowShape:['[',']'],    color:'#5d6d7e' },
+};
+
+// ── Strip nikud (vowel points) before matching ────────
+// Sefaria returns fully vocalized text; patterns are written without nikud.
+// Unicode ranges: Hebrew points U+0591–U+05C7, geresh U+05F3–U+05F4
+function stripNikud(text) {
+  return text.replace(/[֑-ׇ׳״]/g, '').replace(/\s+/g, ' ');
+}
+
+// ── Detection patterns (ordered — first match wins) ───
+// All patterns written WITHOUT nikud; stripNikud() is called before testing.
+const GEMARA_PATTERNS = [
+  // Must come first — very specific openers
+  ['teiku',      [/תיקו/, /תהי/, /בעיא לא איפשיטא/, /ואיבעית אימא/]],
+  ['havaamina',  [/הוה אמינא/, /סלקא דעתך/, /סד"א/, /ס"ד/]],
+  ['maskana',    [/שמע מינה/, /ש"מ/, /מכלל ד/, /אלא לאו/, /הכי קאמר/, /וכן הלכה/, /פשיטא/]],
+  ['kalvchomer', [/קל וחומר/, /ק"ו/, /ומה.*כל שכן/, /מה.*אף/]],
+
+  // Challenges / objections
+  ['kushia',     [/תא שמע/, /קשיא/, /קשה/, /מאי קאמר/, /מאי קשיא/, /מאי טעמא/,
+                  /מנא הני מילי/, /מנלן/, /ורמינהו/, /ומותיב/, /איתיביה/, /מותיב/,
+                  /רמי.*ארמי/, /פשיטא/, /היכי דמי/, /והתנן/, /והתניא/, /והאמר/,
+                  /אמאי/, /מ"ט/, /מאי טעמיה/]],
+
+  // Rejections / deflections
+  ['dchiya',     [/לא קשיא/, /ודחי/, /ודחינן/, /שאני/, /שאני התם/, /הא לא קשיא/,
+                  /לא תימא/, /כי תימא/, /ולא היא/, /ולא אמרן/, /הא מני/]],
+
+  // Dispute
+  ['machloket',  [/פליגי/, /מחלוקת/, /ורבי \w+ אומר/, /ור' \w+ אומר/, /איכא דאמרי/,
+                  /אמר חד.*ואמר חד/, /חד אמר.*וחד אמר/]],
+
+  // Source texts
+  ['brayta',     [/תניא/, /תנו רבנן/, /ת"ר/, /דתניא/, /תנן התם/, /כדתניא/,
+                  /ברייתא/, /מדקתני/, /מדקתנן/, /בברייתא/]],
+  ['mishnah',    [/תנן/, /מתני'/, /מתניתין/, /דתנן/, /כדתנן/, /מדתנן/]],
+
+  // Biblical sources
+  ['pasuk',      [/שנאמר/, /שנא'/, /דכתיב/, /כתיב/, /דאמר קרא/, /קרא אמר/,
+                  /מאי דכתיב/, /על הפסוק/, /בראשית/, /שמות/, /ויקרא/, /במדבר/,
+                  /דברים/, /תהילים/, /ישעיה/, /ירמיה/, /יחזקאל/, /משלי/, /קהלת/]],
+
+  // Narrative / story
+  ['maaseh',     [/מעשה ב/, /מעשה ש/, /הוה עובדא/, /עובדא הוה/, /ההוא גברא/,
+                  /ההיא איתתא/, /פעם אחת/, /אמרו עליו/]],
+
+  // Legal ruling
+  ['halacha',    [/הלכה כ/, /הלכתא/, /פסק הלכה/, /לדינא/, /נקטינן/, /קיימא לן/]],
+
+  // Aggadah / homily
+  ['aggadah',    [/דרש/, /דרשה/, /מאי דכתיב/, /דרש רבי/, /דרשו חכמים/]],
+
+  // Answers
+  ['teirutz',    [/ומשני/, /ומתרץ/, /הא קמ"ל/, /אלא אמר/, /ויש לומר/, /תירוץ/,
+                  /אמר ליה/, /אמרה ליה/, /אמרו לו/, /השיב/]],
+
+  // Informational question
+  ['sheela',     [/שאלה/, /בעי מיניה/, /שאלו אותו/, /שאל ר/, /היכי דמי/,
+                  /מאי/, /כיצד/, /כלומר/, /כגון/]],
+
+  // Amoraic tradition reported
+  ['daat',       [/איתמר/, /אמר ר'/, /אמר רב/, /אמר רבי/, /אמר שמואל/,
+                  /אמר ר"ל/, /אמר ריש לקיש/, /ורבנן/, /ולדעת/, /לשיטת/,
+                  /לרמב"ם/, /לרש"י/, /לתוס'/, /ויש אומרים/, /דאמר/]],
+
+  // Response / answer
+  ['teshuvah',   [/תשובה/, /ענה ו/, /אמר לו/, /ואמר לו/, /השיב לו/]],
+];
+
+function detectType(text) {
+  const norm = stripNikud(text);
+  for (const [type, pats] of GEMARA_PATTERNS)
+    for (const p of pats) if (p.test(norm)) return type;
+  return 'neutral';
+}
+
+/* Split one Sefaria segment into multiple logical sub-units.
+   Strategy: work on the nikud-stripped version to find split boundaries,
+   then use those boundaries to slice the original (nikud-bearing) text. */
+function splitGemaraLine(line) {
+  // Build map: stripped_index → original_index
+  const orig = line;
+  const norm = stripNikud(line);
+
+  // Map each position in norm back to orig
+  const normToOrig = [];
+  let oi = 0;
+  for (let ni = 0; ni < norm.length; ni++) {
+    // Advance orig past any nikud chars that don't appear in norm
+    while (oi < orig.length && orig[oi] !== norm[ni]) oi++;
+    normToOrig[ni] = oi;
+    oi++;
+  }
+
+  // Discourse openers that signal a new logical unit (no nikud)
+  const OPENERS = [
+    'תא שמע', 'ורמינהו', 'ומותיב', 'מותיב', 'איתיביה', 'ואיתיביה',
+    'שמע מינה', 'ש"מ', 'מכלל דאמרת', 'מכלל ד',
+    'תניא', 'תנו רבנן', 'ת"ר', 'דתניא', 'תנן', 'מתני\'',
+    'לא קשיא', 'הא לא קשיא', 'שאני', 'שאני התם',
+    'הכי קאמר', 'כי תימא', 'אלא אמר',
+    'הוה אמינא', 'סלקא דעתך',
+    'תיקו', 'בעיא לא איפשיטא',
+    'פשיטא', 'היכי דמי',
+    'אמר רב ', 'אמר ר\' ', 'אמר רבי ', 'ואמר רב ', 'ואמר ר\' ',
+    'איתמר', 'ואיתמר',
+    'מאי קאמר', 'מאי טעמא',
+  ];
+
+  // Collect all split points (positions in norm where a new unit begins)
+  const splitPoints = new Set();
+
+  // 1. Colon + space → split AFTER the colon (sentence-end in Talmud)
+  for (const m of norm.matchAll(/:\s+/g)) {
+    // Don't split after very short tokens (abbreviations like ר':)
+    const before = norm.slice(Math.max(0, m.index - 3), m.index);
+    if (before.replace(/\s/g,'').length > 1) {
+      splitPoints.add(m.index + m[0].length);
+    }
+  }
+
+  // 2. Discourse openers preceded by a word boundary
+  for (const op of OPENERS) {
+    const re = new RegExp('(?:^|\\s)(' + op.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'g');
+    for (const m of norm.matchAll(re)) {
+      const start = m.index + m[0].length - m[1].length;
+      if (start > 4) splitPoints.add(start); // don't split at position 0
+    }
+  }
+
+  if (!splitPoints.size) return [line.trim()];
+
+  // Sort and slice original text using mapped positions
+  const sorted = [0, ...splitPoints].sort((a,b)=>a-b);
+  const parts = [];
+  for (let i = 0; i < sorted.length; i++) {
+    const normStart = sorted[i];
+    const normEnd   = sorted[i + 1] ?? norm.length;
+    const origStart = normToOrig[normStart] ?? 0;
+    const origEnd   = normToOrig[normEnd - 1] != null ? normToOrig[normEnd - 1] + 1 : orig.length;
+    const slice = orig.slice(origStart, origEnd).trim();
+    if (slice.length > 4) parts.push(slice);
+  }
+  return parts;
+}
+
+// ── Sefaria page counts ───────────────────────────────
+const TRACTATE_PAGES = {
+  'Berakhot':64,'Shabbat':157,'Eruvin':105,'Pesachim':121,'Yoma':88,'Sukkah':56,
+  'Beitzah':40,'Rosh Hashanah':35,'Taanit':31,'Megillah':32,'Moed Katan':29,
+  'Chagigah':27,'Yevamot':122,'Ketubot':112,'Nedarim':91,'Nazir':66,'Sotah':49,
+  'Gittin':90,'Kiddushin':82,'Bava Kamma':119,'Bava Metzia':119,'Bava Batra':176,
+  'Sanhedrin':113,'Makkot':24,'Shevuot':49,'Avodah Zarah':76,'Horayot':14,
+  'Zevachim':120,'Menachot':110,'Chullin':142,'Niddah':73
+};
+
+function populatePages() {
+  const tractate = document.getElementById('tractate-select').value;
+  const maxPage = TRACTATE_PAGES[tractate] || 64;
+  const sel = document.getElementById('page-select');
+  sel.innerHTML = '';
+  // Talmud starts at page 2
+  for (let i = 2; i <= maxPage; i++) {
+    const opt = document.createElement('option');
+    opt.value = i; opt.textContent = i;
+    sel.appendChild(opt);
+  }
+}
+document.getElementById('tractate-select').addEventListener('change', populatePages);
+populatePages();
+
+async function fetchSefaria() {
+  const tractate = document.getElementById('tractate-select').value;
+  const page     = document.getElementById('page-select').value;
+  const amud     = document.getElementById('amud-select').value;
+  const ref      = `${tractate}.${page}${amud}`;
+  const statusEl = document.getElementById('fetch-status');
+  statusEl.className = 'fetch-status';
+  statusEl.textContent = `⏳ טוען ${ref} מספריא...`;
+
+  try {
+    const res  = await fetch(`https://www.sefaria.org/api/texts/${encodeURIComponent(ref)}?context=0&pad=0`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+
+    // `he` is an array of strings (one per mishnah/segment on that amud)
+    const heArr = Array.isArray(data.he) ? data.he : [];
+    if (!heArr.length) throw new Error('לא נמצא טקסט');
+
+    // Strip HTML tags Sefaria wraps words in
+    const clean = heArr.map(s => s.replace(/<[^>]+>/g,'').trim()).filter(Boolean);
+    document.getElementById('gemara-input').value = clean.join('\n');
+
+    statusEl.className = 'fetch-status ok';
+    const tractateHe = document.getElementById('tractate-select').options[document.getElementById('tractate-select').selectedIndex].text;
+    statusEl.textContent = `✓ נטענו ${clean.length} קטעים — ${tractateHe} דף ${page}${amud === 'a' ? 'א' : 'ב'}`;
+    analyzeGemara();
+  } catch(e) {
+    statusEl.className = 'fetch-status error';
+    statusEl.textContent = `❌ שגיאה: ${e.message}`;
+  }
+}
+
+// ── Render ────────────────────────────────────────────
+function truncate(t, max=40) { return t.length > max ? t.slice(0,max)+'...' : t; }
+function escapeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function nowTime() { const d=new Date(); return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0'); }
+
+let gemaraSegments = [];
+
+// Types that open a new sugya (logical unit)
+const SUGYA_OPENERS  = new Set(['mishnah','brayta','halacha']);
+// Types that close a sugya
+const SUGYA_CLOSERS  = new Set(['maskana','teiku']);
+
+function groupIntoSugyot(segs) {
+  const sugyot = [];
+  let cur = { segments: [] };
+  segs.forEach((seg, i) => {
+    const prevType = i > 0 ? segs[i-1].type : null;
+    const startsNew = i > 0 && (
+      SUGYA_OPENERS.has(seg.type) ||
+      (prevType && SUGYA_CLOSERS.has(prevType))
+    );
+    if (startsNew && cur.segments.length) {
+      sugyot.push(cur);
+      cur = { segments: [] };
+    }
+    cur.segments.push(seg);
+  });
+  if (cur.segments.length) sugyot.push(cur);
+  return sugyot;
+}
+
+// ── Discourse openers to strip before building titles ─
+const OPENER_RE = /^(גמרא|תנא דבי|תנא|תניא|תנו רבנן|ת"ר|תנן|דתנן|מתניתין|מתני'|ומשני|ומתרץ|אמר מר|ואמר|אמרי|קאמר|אמר ר[בי'"\s]+[\w]+[:\s]|אמר רב[\w\s]+[:\s])\s*/;
+
+function _topicFromText(text) {
+  let s = text
+    .replace(OPENER_RE, '')
+    .replace(/^[:\-—]\s*/, '')
+    .trim();
+  // Cut at first natural pause or 48 chars
+  const stop = s.search(/[,;.?!׃]/);
+  if (stop > 4 && stop < 48) s = s.slice(0, stop);
+  return s.slice(0, 50) + (s.length > 50 ? '...' : '');
+}
+
+function _machloketTitle(seg, allSegsText) {
+  const t = seg;
+  // "NAME אומר ... vNAME אומר"
+  const m1 = t.match(
+    /(ר(?:בי|ב|בן|'|")\s*\w+|חכמים|בית שמאי|בית הלל)\s+אומרי?[ם]?[^.]{0,60}?ו(ר(?:בי|ב|בן|'|")\s*\w+|חכמים|בית שמאי|בית הלל)\s+אומרי?[ם]?/
+  );
+  if (m1) return `מחלוקת ${m1[1]} ו${m1[2]}`;
+
+  // "NAME וNAME פליגי"
+  const m2 = t.match(/(ר(?:בי|ב|בן|'|")\s*\w+|חכמים)\s+ו(ר(?:בי|ב|בן|'|")\s*\w+|חכמים)\s+פליגי/);
+  if (m2) return `מחלוקת ${m2[1]} ו${m2[2]}`;
+
+  // Fallback — first 40 chars
+  return 'מחלוקת: ' + t.replace(/^ו/, '').slice(0, 40);
+}
+
+function sugyaTitle(sg, idx) {
+  const segs    = sg.segments;
+  const normed  = segs.map(s => stripNikud(s.text));
+  const allNorm = normed.join(' ');
+
+  // ── Machloket sugya ──────────────────────────────────
+  const mIdx = segs.findIndex(s => s.type === 'machloket');
+  if (mIdx !== -1) {
+    const subject = _machloketTitle(normed[mIdx], allNorm);
+    // Try to add what the dispute is ABOUT by looking for topic before first machloket
+    const beforeText = normed.slice(0, mIdx).join(' ');
+    const topicMatch = beforeText.match(/(?:לגבי|על|ב|ל)\s+(.{3,30}?)(?:\s+מחלוקת|\s*,|\s*\.|\s*$)/);
+    const topicHint  = topicMatch ? ` — ${topicMatch[1].trim()}` : '';
+    const td = GEMARA_TYPES[segs[mIdx].type];
+    return `${td.icon} סוגיא ${idx + 1} — ${subject}${topicHint}`;
+  }
+
+  // ── Non-machloket: pick best anchor segment ──────────
+  const anchor =
+    segs.find(s => s.type === 'mishnah')  ||
+    segs.find(s => s.type === 'brayta')   ||
+    segs.find(s => s.type === 'halacha')  ||
+    segs.find(s => s.type === 'pasuk')    ||
+    segs.find(s => !['neutral','daat','havaamina'].includes(s.type)) ||
+    segs[0];
+
+  const anchorIdx = segs.indexOf(anchor);
+  const topic = _topicFromText(normed[anchorIdx]);
+  const td    = GEMARA_TYPES[anchor.type] || GEMARA_TYPES.neutral;
+  return `${td.icon} סוגיא ${idx + 1} — ${topic}`;
+}
+
+function analyzeGemara() {
+  const raw = document.getElementById('gemara-input').value.trim();
+  if (!raw) { alert('אנא הכנס טקסט'); return; }
+  const lines  = raw.split(/\n+/).filter(s => s.trim().length > 2);
+  // Split each Sefaria segment into logical sub-units before tagging
+  const chunks = lines.flatMap(line => splitGemaraLine(line));
+  gemaraSegments = chunks.map((text, i) => ({ id:i, text:text.trim(), type:detectType(text) }));
+  renderGemaraLegend();
+  renderGemaraSegments();
+  document.getElementById('gemara-legend-card').style.display = 'block';
+  document.getElementById('gemara-segments-card').style.display = 'block';
+  buildGemaraFlowchart();
+}
+
+function renderGemaraLegend() {
+  const typesUsed = [...new Set(gemaraSegments.map(s => s.type))];
+  document.getElementById('gemara-legend').innerHTML = typesUsed.map(t => {
+    const td = GEMARA_TYPES[t] || GEMARA_TYPES.neutral;
+    return `<div class="legend-item">
+      <div class="legend-dot" style="background:${td.color}"></div>
+      ${td.icon} ${td.he}
+    </div>`;
+  }).join('');
+}
+
+function renderGemaraSegments() {
+  const typeKeys = Object.keys(GEMARA_TYPES);
+  const sugyot   = groupIntoSugyot(gemaraSegments);
+
+  document.getElementById('gemara-segments').innerHTML = sugyot.map((sg, si) => {
+    const blocks = sg.segments.map(seg => {
+      const td   = GEMARA_TYPES[seg.type] || GEMARA_TYPES.neutral;
+      const opts = typeKeys.map(k =>
+        `<option value="${k}" ${seg.type===k?'selected':''}>${GEMARA_TYPES[k].icon} ${GEMARA_TYPES[k].he}</option>`
+      ).join('');
+      return `<div class="scratch-block ${td.cls}" id="seg-${seg.id}">
+        <div class="block-tooltip">${td.icon} ${td.he} — ${td.en}</div>
+        <span class="scratch-block-icon">${td.icon}</span>
+        <div class="scratch-block-text">
+          <span class="scratch-block-label">${td.he}</span><br>${escapeHtml(seg.text)}
+        </div>
+        <select onchange="changeSegType(${seg.id},this.value)" title="שנה סוג">${opts}</select>
+      </div>`;
+    }).join('');
+
+    return `<div class="sugya-group">
+      <div class="sugya-header">${sugyaTitle(sg, si)}</div>
+      <div class="sugya-blocks scratch-stack">${blocks}</div>
+    </div>`;
+  }).join('');
+}
+
+function changeSegType(id, t) {
+  gemaraSegments[id].type = t;
+  renderGemaraLegend();
+  renderGemaraSegments();
+  buildGemaraFlowchart();
+}
+
+function clearGemara() {
+  document.getElementById('gemara-input').value = '';
+  document.getElementById('fetch-status').textContent = '';
+  gemaraSegments = [];
+  document.getElementById('gemara-legend-card').style.display = 'none';
+  document.getElementById('gemara-segments-card').style.display = 'none';
+  document.getElementById('gemara-flowchart-wrap').style.display = 'none';
+}
+
+// ── Flowchart helpers ─────────────────────────────────
+
+function mlabel(text, maxLen = 30) {
+  return text
+    .slice(0, maxLen)
+    .replace(/["\[\]{}()/\\|<>]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    + (text.length > maxLen ? '...' : '');
+}
+
+/* Semantic summary for flowchart nodes:
+   Returns "[icon type · first content words]" rather than raw speech text.
+   Used in modes 2 & 3 so nodes show meaning, not transcript. */
+const DISCOURSE_OPENERS = /^(אמר|ואמר|תניא|תנו רבנן|ת"ר|שמע מינה|תא שמע|אלא|הנה|כלומר|ולפיכך|כן|אכן|דהיינו|היינו|פירוש|ביאור|לפי)\s+/;
+
+function nodeLabel(text, name) {
+  const type   = detectType(text);
+  const td     = GEMARA_TYPES[type] || GEMARA_TYPES.neutral;
+  const icon   = td.icon;
+  const typeHe = td.he;
+
+  // Strip common discourse openers, then take first ~4 content words
+  const clean = stripNikud(text).trim().replace(DISCOURSE_OPENERS, '');
+  const words = clean.split(/\s+/).filter(Boolean);
+  const snippet = words.slice(0, 4).join(' ') + (words.length > 4 ? '...' : '');
+  const safeName    = mlabel(name, 12);
+  const safeSnippet = snippet.replace(/["\[\]{}()/\\|<>]/g, ' ').trim();
+
+  return `${safeName} · ${icon}${typeHe}${safeSnippet ? ' — ' + safeSnippet : ''}`;
+}
+
+/* Who is the previous segment talking about — for edge labels */
+function _challengeTarget(prevSeg) {
+  if (!prevSeg) return null;
+  const n = stripNikud(prevSeg.text);
+  const r = n.match(/(?:אמר|ואמר)\s+(ר(?:בי|ב|בן|')\s*\w+|רב\s+\w+)/);
+  if (r) return r[1];
+  if (prevSeg.type === 'mishnah')  return 'המשנה';
+  if (prevSeg.type === 'brayta')   return 'הברייתא';
+  if (prevSeg.type === 'pasuk')    return 'הפסוק';
+  if (prevSeg.type === 'halacha')  return 'ההלכה';
+  return null;
+}
+
+/* First meaningful phrase from an answer segment */
+function _answerSummary(normText) {
+  let s = normText
+    .replace(/^(ומשני|ומתרץ|אמר ליה|אמר לו|השיב|תירוץ|לא קשיא|שאני)\s*/, '')
+    .replace(/^[:\-—]\s*/, '').trim();
+  const stop = s.search(/[,;.?!]/);
+  if (stop > 3 && stop < 32) s = s.slice(0, stop);
+  return s.slice(0, 30);
+}
+
+/* Descriptive label for the arrow between two segments */
+function _edgeLabel(fromSeg, toSeg) {
+  switch (toSeg.type) {
+    case 'kushia': case 'sheela': {
+      const t = _challengeTarget(fromSeg);
+      return t ? `קושיא על ${t}` : 'קושיא';
+    }
+    case 'teirutz': case 'teshuvah': {
+      const ans = _answerSummary(stripNikud(toSeg.text));
+      return ans ? `תירוץ: ${ans}` : 'תירוץ';
+    }
+    case 'dchiya':    return 'דחייה';
+    case 'maskana':   return 'מסקנה';
+    case 'teiku':     return 'תיקו';
+    case 'machloket': return 'פלוגתא';
+    case 'havaamina': return 'הנחה ראשונית';
+    default:          return '';
+  }
+}
+
+/* Richer node label with semantic context */
+function _enrichedLabel(seg, prevSeg) {
+  const norm = stripNikud(seg.text);
+  switch (seg.type) {
+    case 'kushia': case 'sheela': {
+      const target  = _challengeTarget(prevSeg);
+      const content = _topicFromText(norm).slice(0, 24);
+      return target ? `קושיא על ${target}: ${content}` : `קושיא: ${content}`;
+    }
+    case 'teirutz': case 'teshuvah':
+      return `תירוץ: ${_answerSummary(norm)}`;
+    case 'daat': {
+      const rm    = norm.match(/(?:אמר|ואמר)\s+(ר(?:בי|ב|בן|')\s*\w+|רב\s+\w+)/);
+      const rabbi = rm ? rm[1] : '';
+      const topic = _topicFromText(norm).slice(0, 26);
+      return rabbi ? `${rabbi}: ${topic}` : topic;
+    }
+    case 'machloket': {
+      const m = norm.match(/(ר(?:בי|ב|בן|')\s*\w+|חכמים|בית שמאי|בית הלל)\s+אומרי?/);
+      return m ? `מחלוקת: ${m[1]} ואח` : `מחלוקת: ${_topicFromText(norm).slice(0, 22)}`;
+    }
+    case 'maskana':
+      return `מסקנה: ${_answerSummary(norm)}`;
+    default:
+      return _topicFromText(norm).slice(0, 32);
+  }
+}
+
+function mermaidNode(type, id, label) {
+  const c = mlabel(label, 40);
+  switch(type) {
+    case 'kushia': case 'sheela': case 'dchiya': case 'teiku':
+      return `L${id}{"${c}"}`;
+    case 'teirutz': case 'teshuvah': case 'maskana': case 'halacha':
+      return `L${id}(["${c}"])`;
+    default:
+      return `L${id}["${c}"]`;
+  }
+}
+
+async function buildGemaraFlowchart() {
+  if (!gemaraSegments.length) return;
+  const sugyot = groupIntoSugyot(gemaraSegments);
+  const classAssigns = [];
+  const lines = ['flowchart LR'];
+
+  Object.entries(GEMARA_TYPES).forEach(([key, td]) => {
+    lines.push(`  classDef ${key} fill:${td.color},stroke:${td.color},color:#fff,font-weight:bold`);
+  });
+
+  sugyot.forEach((sg, si) => {
+    const safeTitle = mlabel(
+      sugyaTitle(sg, si).replace(/[^\u05D0-\u05EA\u05F0-\u05F4\w\s\-:']/g, ' '), 55
+    );
+    lines.push(`  subgraph SG${si}["${safeTitle}"]`);
+    lines.push(`    direction TB`);
+
+    sg.segments.forEach((seg, k) => {
+      const prevSeg = k > 0 ? sg.segments[k - 1] : null;
+      lines.push('    ' + mermaidNode(seg.type, seg.id, _enrichedLabel(seg, prevSeg)));
+      classAssigns.push(`  class L${seg.id} ${seg.type in GEMARA_TYPES ? seg.type : 'neutral'}`);
+
+      if (k > 0) {
+        const edgeLbl  = _edgeLabel(prevSeg, seg);
+        const safeEdge = edgeLbl ? mlabel(edgeLbl, 30) : '';
+        lines.push(`    L${prevSeg.id} ${safeEdge ? '-->|"' + safeEdge + '"|' : '-->'} L${seg.id}`);
+      }
+    });
+
+    lines.push('  end');
+    if (si > 0) lines.push(`  SG${si - 1} --> SG${si}`);
+  });
+
+  sugyot.forEach((_, si) => {
+    lines.push(`  style SG${si} fill:#f5f0e8,stroke:#2c1810,stroke-width:2px,color:#2c1810`);
+  });
+  lines.push(...classAssigns);
+
+  await renderMermaid('gemara-flowchart', lines.join('\n'));
+  document.getElementById('gemara-flowchart-wrap').style.display = 'block';
+}
+
+
+/* ══════════════════════════════════════════════════════
+   MODE 2 – CHAVRUTA
+══════════════════════════════════════════════════════ */
+let cv = {
+  nameA:'', nameB:'', topic:'',
+  ready: false,
+  messages: [],
+  detector: null,
+  recognition: null,
+  isRecording: false,
+  flowchartDebounce: null
+};
+
+function startChavrutaCalibration() {
+  const a = document.getElementById('chavruta-name-a').value.trim() || 'לומד א';
+  const b = document.getElementById('chavruta-name-b').value.trim() || 'לומד ב';
+  cv.nameA = a; cv.nameB = b;
+  document.getElementById('cal-a-name').textContent = a;
+  document.getElementById('cal-b-name').textContent = b;
+  document.getElementById('cv-step-names').style.display = 'none';
+  document.getElementById('cv-step-cal').style.display = 'block';
+}
+
+
+async function calibrateSpeaker(mode, speakerId) {
+  const buttonId = mode === 'chavruta'
+    ? (speakerId === 'a' ? 'btn-cal-a' : 'btn-cal-b')
+    : 'btn-lec-cal';
+  const btn = document.getElementById(buttonId);
+  btn.disabled = true;
+
+  let detector, barEl, statusEl, calStepEl, nextBtn;
+  if (mode === 'chavruta') {
+    barEl     = document.getElementById(speakerId === 'a' ? 'cal-a-bar'    : 'cal-b-bar');
+    statusEl  = document.getElementById(speakerId === 'a' ? 'cal-a-status' : 'cal-b-status');
+    calStepEl = document.getElementById(speakerId === 'a' ? 'cal-step-a'   : 'cal-step-b');
+    nextBtn   = document.getElementById(speakerId === 'a' ? 'btn-cal-b'    : 'btn-start-chavruta');
+  } else {
+    barEl     = document.getElementById('lec-cal-bar');
+    statusEl  = document.getElementById('lec-cal-status');
+    calStepEl = document.getElementById('lec-cal-step');
+    nextBtn   = document.getElementById('btn-start-lecture');
+  }
+
+  calStepEl.className = 'cal-step active';
+  statusEl.textContent = '⏳ מבקש גישה למיקרופון...';
+
+  try {
+    // Check API availability first
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+      throw Object.assign(new Error('הדפדפן אינו תומך במיקרופון — נסה Chrome או Safari עדכני'), {friendly: true});
+    }
+
+    // Init audio context (requests mic permission)
+    if (mode === 'chavruta') {
+      if (!cv.detector) { cv.detector = new SpeakerDetector(); }
+      await cv.detector.init();
+      detector = cv.detector;
+    } else {
+      if (!lec.detector) { lec.detector = new SpeakerDetector(); }
+      await lec.detector.init();
+      detector = lec.detector;
+    }
+
+    statusEl.textContent = '🎙 דבר עכשיו...';
+    await detector.calibrate(speakerId, 4000, p => {
+      barEl.style.width = (p * 100) + '%';
+      statusEl.textContent = '🎙 מזהה קול... ' + Math.round(p * 100) + '%';
+    });
+
+    calStepEl.className = 'cal-step done';
+    statusEl.innerHTML = '<span class="checkmark">✓</span> זיהוי קול הושלם!';
+    if (nextBtn) nextBtn.disabled = false;
+
+  } catch(e) {
+    calStepEl.className = 'cal-step';
+    let msg = e.friendly ? e.message
+            : e.name === 'NotAllowedError'  ? 'גישה למיקרופון נדחתה — לחץ "אפשר" בדפדפן'
+            : e.name === 'NotFoundError'    ? 'לא נמצא מיקרופון במכשיר'
+            : e.name === 'NotReadableError' ? 'המיקרופון בשימוש על ידי תוכנה אחרת'
+            : e.message || 'שגיאה לא ידועה';
+    statusEl.innerHTML = `❌ ${msg}`;
+    btn.disabled = false;
+    // Destroy broken detector so next attempt starts fresh
+    if (mode === 'chavruta' && cv.detector)  { cv.detector.destroy();  cv.detector  = null; }
+    if (mode === 'lecture'  && lec.detector) { lec.detector.destroy(); lec.detector = null; }
+  }
+}
+
+function beginChavruta() {
+  const topic = document.getElementById('chavruta-topic').value.trim();
+  cv.topic = topic;
+  cv.ready = true;
+  document.getElementById('chavruta-setup').style.display = 'none';
+  document.getElementById('chavruta-title').textContent = `🤝 ${cv.nameA} ו${cv.nameB}${topic ? ' — ' + topic : ''}`;
+  cv.detector.meterCb = pct => { document.getElementById('chavruta-meter').style.width = pct + '%'; };
+  document.getElementById('cv-live-badge').style.display = '';
+  document.getElementById('chavruta-flowchart-wrap').style.display = 'block';
+  document.getElementById('chavruta-chat').style.display = 'flex';
+}
+
+function toggleChavrutaRecording() {
+  if (cv.isRecording) stopChavrutaRecording();
+  else startChavrutaRecording();
+}
+
+function startChavrutaRecording() {
+  if (!cv.detector) { alert('אנא בצע זיהוי קול קודם'); return; }
+
+  const rec = createRecognition(
+    text => updateChavrutaInterim(text),
+    text => finalizeChavrutaUtterance(text),
+    ()   => { if (cv.isRecording) { cv.recognition.start(); } }
+  );
+  if (!rec) return;
+  cv.recognition = rec;
+  cv.isRecording = true;
+  rec.start();
+
+  const bar = document.getElementById('chavruta-rec-bar');
+  bar.className = 'rec-bar active';
+  document.getElementById('chavruta-rec-status').textContent = 'מקליט — מדבר...';
+  document.getElementById('btn-cv-record').textContent = '⏹ עצור הקלטה';
+  document.getElementById('btn-cv-record').className = 'btn btn-stop';
+}
+
+function stopChavrutaRecording() {
+  cv.isRecording = false;
+  if (cv.recognition) { try { cv.recognition.stop(); } catch(e){} cv.recognition = null; }
+  document.getElementById('chavruta-rec-bar').className = 'rec-bar idle';
+  document.getElementById('chavruta-rec-status').textContent = 'הקלטה הופסקה';
+  document.getElementById('chavruta-active-speaker').textContent = '';
+  document.getElementById('btn-cv-record').textContent = '🎙 התחל הקלטה';
+  document.getElementById('btn-cv-record').className = 'btn btn-record';
+  cv.interimBubbleId = null;
+}
+
+function getSpeakerId_chavruta() {
+  if (!cv.detector) return 'a';
+  const id = cv.detector.identify();
+  return id || 'a';
+}
+
+function updateChavrutaInterim(text) {
+  const speaker = getSpeakerId_chavruta();
+  const name = speaker === 'a' ? cv.nameA : cv.nameB;
+  document.getElementById('chavruta-active-speaker').textContent = name + ' מדבר...';
+
+  const chat = document.getElementById('chavruta-chat');
+  const existingInterim = document.getElementById('interim-bubble');
+  if (existingInterim) {
+    existingInterim.querySelector('.interim-text').textContent = text;
+  } else {
+    const div = document.createElement('div');
+    div.id = 'interim-bubble';
+    div.className = `chat-bubble speaker-${speaker} interim`;
+    div.innerHTML = `<div class="bubble-name">${escapeHtml(name)}</div><span class="interim-text">${escapeHtml(text)}</span>`;
+    const emp = chat.querySelector('.empty-state');
+    if (emp) emp.remove();
+    chat.appendChild(div);
+  }
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function finalizeChavrutaUtterance(text) {
+  const existing = document.getElementById('interim-bubble');
+  if (existing) existing.remove();
+
+  const speaker = getSpeakerId_chavruta();
+  const name    = speaker === 'a' ? cv.nameA : cv.nameB;
+
+  cv.messages.push({ speaker, name, text, time: nowTime() });
+  document.getElementById('chavruta-active-speaker').textContent = '';
+
+  const row = document.getElementById('cv-last-said');
+  row.style.display = 'flex';
+  row.innerHTML = `<span class="last-said-name role-${speaker}">${escapeHtml(name)}</span><span class="last-said-text">${escapeHtml(text)}</span>`;
+
+  renderChavrutaChat();
+  scheduleCvFlowchart();
+}
+
+function renderChavrutaChat() {
+  const chat = document.getElementById('chavruta-chat');
+  const interim = document.getElementById('interim-bubble');
+  chat.innerHTML = cv.messages.map(m => `
+    <div class="chat-bubble speaker-${m.speaker}">
+      <div class="bubble-name">${escapeHtml(m.name)} · ${m.time}</div>
+      ${escapeHtml(m.text)}
+    </div>
+  `).join('');
+  if (interim) chat.appendChild(interim);
+  if (!chat.children.length) chat.innerHTML = '<div class="empty-state">השיחה תופיע כאן בזמן אמת...</div>';
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function scheduleCvFlowchart() {
+  clearTimeout(cv.flowchartDebounce);
+  cv.flowchartDebounce = setTimeout(buildChavrutaFlowchart, 100);
+}
+
+async function buildChavrutaFlowchart() {
+  if (!cv.messages.length) return;
+  const lines = [
+    'flowchart TD',
+    `  classDef spA fill:#0a84ff,stroke:#0060c0,color:#fff`,
+    `  classDef spB fill:#16a34a,stroke:#0f7736,color:#fff`
+  ];
+  cv.messages.forEach((m, i) => {
+    const lbl = nodeLabel(m.text, m.name);
+    if (m.speaker === 'a') {
+      lines.push(`  C${i}(["${lbl}"])`);
+    } else {
+      lines.push(`  C${i}["${lbl}"]`);
+    }
+    lines.push(`  class C${i} ${m.speaker === 'a' ? 'spA' : 'spB'}`);
+    if (i > 0) lines.push(`  C${i-1} --> C${i}`);
+  });
+  await renderMermaid('chavruta-flowchart', lines.join('\n'));
+}
+
+function resetChavruta() {
+  stopChavrutaRecording();
+  if (cv.detector) { cv.detector.destroy(); cv.detector = null; }
+  cv = { nameA:'', nameB:'', topic:'', ready:false, messages:[], detector:null, recognition:null, isRecording:false, flowchartDebounce:null };
+  document.getElementById('cv-last-said').style.display = 'none';
+  document.getElementById('cv-live-badge').style.display = 'none';
+  document.getElementById('chavruta-chat').style.display = 'none';
+  document.getElementById('chavruta-chat').innerHTML = '<div class="empty-state">השיחה תופיע כאן בזמן אמת...</div>';
+  document.getElementById('chavruta-flowchart-wrap').style.display = 'none';
+  document.getElementById('cv-step-names').style.display = 'block';
+  document.getElementById('cv-step-cal').style.display = 'none';
+  document.getElementById('cal-a-bar').style.width = '0%';
+  document.getElementById('cal-b-bar').style.width = '0%';
+  document.getElementById('cal-a-status').textContent = 'ממתין...';
+  document.getElementById('cal-b-status').textContent = 'ממתין...';
+  document.getElementById('cal-step-a').className = 'cal-step';
+  document.getElementById('cal-step-b').className = 'cal-step';
+  document.getElementById('btn-cal-a').disabled = false;
+  document.getElementById('btn-cal-b').disabled = true;
+  document.getElementById('btn-start-chavruta').disabled = true;
+  document.getElementById('chavruta-name-a').value = '';
+  document.getElementById('chavruta-name-b').value = '';
+  document.getElementById('chavruta-topic').value = '';
+  document.getElementById('chavruta-setup').style.display = 'flex';
+}
+
+/* ══════════════════════════════════════════════════════
+   MODE 3 – LECTURE
+══════════════════════════════════════════════════════ */
+let lec = {
+  rabbiName:'', topic:'',
+  ready: false,
+  entries: [],
+  detector: null,
+  recognition: null,
+  isRecording: false,
+  flowchartDebounce: null
+};
+
+
+function beginLecture() {
+  const rabbi = document.getElementById('lecture-rabbi-name').value.trim() || 'הרב';
+  const topic = document.getElementById('lecture-topic').value.trim();
+  lec.rabbiName = rabbi; lec.topic = topic;
+  lec.ready = true;
+  document.getElementById('lecture-setup').style.display = 'none';
+  document.getElementById('lecture-title').textContent = `🎓 ${rabbi}${topic ? ' — ' + topic : ''}`;
+  document.getElementById('lec-live-badge').style.display = '';
+  document.getElementById('lecture-flowchart-wrap').style.display = 'block';
+}
+
+function toggleLectureRecording() {
+  if (lec.isRecording) stopLectureRecording();
+  else startLectureRecording();
+}
+
+function startLectureRecording() {
+
+  let lastSpeaker = null;
+  let accText = '';
+
+  const rec = createRecognition(
+    text => updateLectureInterim(text),
+    text => finalizeLectureUtterance(text),
+    ()   => { if (lec.isRecording) { lec.recognition.start(); } }
+  );
+  if (!rec) return;
+  lec.recognition = rec;
+  lec.isRecording = true;
+  rec.start();
+
+  const bar = document.getElementById('lecture-rec-bar');
+  bar.className = 'rec-bar active';
+  document.getElementById('lecture-rec-status').textContent = 'מקליט...';
+  document.getElementById('btn-lec-record').textContent = '⏹ עצור הקלטה';
+  document.getElementById('btn-lec-record').className = 'btn btn-stop';
+}
+
+function stopLectureRecording() {
+  lec.isRecording = false;
+  if (lec.recognition) { try { lec.recognition.stop(); } catch(e){} lec.recognition = null; }
+  document.getElementById('lecture-rec-bar').className = 'rec-bar idle';
+  document.getElementById('lecture-rec-status').textContent = 'הקלטה הופסקה';
+  document.getElementById('lecture-active-speaker').textContent = '';
+  document.getElementById('btn-lec-record').textContent = '🎙 התחל הקלטה';
+  document.getElementById('btn-lec-record').className = 'btn btn-record';
+}
+
+function getSpeakerRole_lecture(text) {
+  return 'rabbi'; // Rabbi speaks the vast majority of the time
+}
+
+function updateLectureInterim(text) {
+  const role = getSpeakerRole_lecture(text);
+  const speakerLabel = role === 'rabbi' ? lec.rabbiName : 'תלמיד';
+  document.getElementById('lecture-active-speaker').textContent = speakerLabel + ' מדבר...';
+}
+
+function finalizeLectureUtterance(text) {
+  const role = getSpeakerRole_lecture(text);
+  const last = lec.entries[lec.entries.length - 1];
+  if (last && last.role === role) {
+    last.text += ' ' + text;
+    last.time = nowTime();
+  } else {
+    lec.entries.push({ role, speaker: role === 'rabbi' ? lec.rabbiName : 'תלמיד', text, time: nowTime() });
+  }
+  document.getElementById('lecture-active-speaker').textContent = '';
+
+  const row = document.getElementById('lec-last-said');
+  const e = lec.entries[lec.entries.length - 1];
+  row.style.display = 'flex';
+  row.innerHTML = `<span class="last-said-name role-${e.role}">${escapeHtml(e.speaker)}</span><span class="last-said-text">${escapeHtml(e.text)}</span>`;
+
+  scheduleLecFlowchart();
+}
+
+function scheduleLecFlowchart() {
+  // Debounce: coalesce bursts of utterances into a single render so the
+  // ever-growing chart isn't re-laid-out on every word the rabbi speaks.
+  clearTimeout(lec.flowchartDebounce);
+  lec.flowchartDebounce = setTimeout(buildLectureFlowchart, 500);
+}
+
+/* Lecture chart: clean topic-flow style, not Gemara analysis.
+   Each node = speaker + first ~6 content words of what was said. */
+function lectureSnippet(text) {
+  const clean = stripNikud(text).trim()
+    .replace(DISCOURSE_OPENERS, '')          // strip common openers
+    .replace(/["\[\]{}()/\\|<>]/g, ' ')
+    .replace(/\s+/g, ' ').trim();
+  const words = clean.split(/\s+/).filter(Boolean);
+  return words.slice(0, 6).join(' ') + (words.length > 6 ? '...' : '');
+}
+
+async function buildLectureFlowchart() {
+  if (!lec.entries.length) return;
+
+  const lines = [
+    'flowchart TD',
+    '  classDef rabbi fill:#0a84ff,stroke:#0060c0,color:#fff',
+  ];
+
+  lec.entries.forEach((e, i) => {
+    const name    = mlabel(e.speaker, 10);
+    const snippet = lectureSnippet(e.text);
+    const lbl     = snippet ? `${name}: ${snippet}` : name;
+    lines.push(`  L${i}["${lbl}"]`);
+    lines.push(`  class L${i} rabbi`);
+    if (i > 0) lines.push(`  L${i-1} --> L${i}`);
+  });
+
+  await renderMermaid('lecture-flowchart', lines.join('\n'));
+  document.getElementById('lecture-flowchart-wrap').style.display = 'block';
+}
+
+function resetLecture() {
+  stopLectureRecording();
+  if (lec.detector) { lec.detector.destroy(); lec.detector = null; }
+  lec = { rabbiName:'', topic:'', ready:false, entries:[], detector:null, recognition:null, isRecording:false, flowchartDebounce:null };
+  document.getElementById('lec-last-said').style.display = 'none';
+  document.getElementById('lec-live-badge').style.display = 'none';
+  document.getElementById('lecture-flowchart-wrap').style.display = 'none';
+  document.getElementById('lecture-rabbi-name').value = '';
+  document.getElementById('lecture-topic').value = '';
+  document.getElementById('lecture-setup').style.display = 'flex';
+}
+</script>
+</body>
+</html>
