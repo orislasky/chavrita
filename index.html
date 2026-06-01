@@ -858,12 +858,12 @@ window.addEventListener('resize', () => {
 })();
 
 function abortChavruta() {
-  if (cv.detector) { cv.detector.destroy(); cv.detector = null; }
+  if (cv.detector) { try { cv.detector.destroy(); } catch(e){} cv.detector = null; }
   document.getElementById('chavruta-setup').style.display = 'none';
 }
 
 function abortLecture() {
-  if (lec.detector) { lec.detector.destroy(); lec.detector = null; }
+  if (lec.detector) { try { lec.detector.destroy(); } catch(e){} lec.detector = null; }
   document.getElementById('lecture-setup').style.display = 'none';
 }
 
@@ -1296,9 +1296,11 @@ function _prevRef(tractate, page, amud) {
 function _looksLikeContinuation(firstSeg) {
   const n = stripNikud(firstSeg).trim();
   // Clear sugya openers → NOT a continuation
-  if (/^(גמ|מתני|תנו רבנן|ת"ר|תניא|תנן|איתמר|איבעיא להו|בעי|אמר ר|אמר רב|דרש|משנה)/.test(n)) return false;
-  // Connectives that only make sense mid-discussion → continuation
-  if (/^(אלא|והא|הא |דאי|אי הכי|אי בעית|ולא|ואי|מאי|דאמר|הניחא|בשלמא|ורבי|ולמאן|אמר ליה|אמר לו|כי קאמר|לא קשיא|שאני|ודחי|ורמינהו|אדרבה)/.test(n)) return true;
+  if (/^(גמ|מתני|תנו רבנן|ת"ר|תניא|תנן|איתמר|איבעיא להו|בעי|אמר ר|אמר רב|דרש|משנה|מאימתי|מאימת)/.test(n)) return false;
+  // Connectives that only make sense mid-discussion → continuation.
+  // The (?=...) boundary stops "מאי" matching "מאימתי", "הא" matching "האשה", etc.
+  // (JS \b doesn't work on Hebrew letters, so we require a following space/punctuation.)
+  if (/^(אלא|והא|הא|דאי|אי הכי|אי בעית|ולא|ואי|מאי|דאמר|הניחא|בשלמא|ורבי|ולמאן|אמר ליה|אמר לו|כי קאמר|לא קשיא|שאני|ודחי|ורמינהו|אדרבה)(?=\s|["'׳:.,]|$)/.test(n)) return true;
   return false;
 }
 
@@ -1864,8 +1866,8 @@ async function calibrateSpeaker(mode, speakerId) {
     statusEl.innerHTML = `❌ ${msg}`;
     btn.disabled = false;
     // Destroy broken detector so next attempt starts fresh
-    if (mode === 'chavruta' && cv.detector)  { cv.detector.destroy();  cv.detector  = null; }
-    if (mode === 'lecture'  && lec.detector) { lec.detector.destroy(); lec.detector = null; }
+    if (mode === 'chavruta' && cv.detector)  { try { cv.detector.destroy(); } catch(e){}  cv.detector  = null; }
+    if (mode === 'lecture'  && lec.detector) { try { lec.detector.destroy(); } catch(e){} lec.detector = null; }
   }
 }
 
@@ -2005,7 +2007,7 @@ function buildChavrutaFlowchart() {
 
 function resetChavruta() {
   stopChavrutaRecording();
-  if (cv.detector) { cv.detector.destroy(); cv.detector = null; }
+  if (cv.detector) { try { cv.detector.destroy(); } catch(e){} cv.detector = null; }
   cv = { nameA:'', nameB:'', topic:'', ready:false, messages:[], detector:null, recognition:null, isRecording:false, voteWindow:[], voteTimer:null };
   document.getElementById('cv-last-said').style.display = 'none';
   document.getElementById('cv-live-badge').style.display = 'none';
@@ -2120,7 +2122,7 @@ function finalizeLectureUtterance(text) {
 
 function resetLecture() {
   stopLectureRecording();
-  if (lec.detector) { lec.detector.destroy(); lec.detector = null; }
+  if (lec.detector) { try { lec.detector.destroy(); } catch(e){} lec.detector = null; }
   lec = { rabbiName:'', topic:'', ready:false, entries:[], detector:null, recognition:null, isRecording:false, flowchartDebounce:null };
   document.getElementById('lec-live-badge').style.display = 'none';
   document.getElementById('lecture-flowchart-wrap').style.display = 'none';
