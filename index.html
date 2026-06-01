@@ -165,7 +165,7 @@
     }
 
     /* Indent scratch blocks by logical depth (RTL — margin-right) */
-    .sb-kushia, .sb-sheela   { margin-right: 28px; border-right-width: 6px; }
+    .sb-kushia, .sb-sheela, .sb-signonit { margin-right: 28px; border-right-width: 6px; }
     .sb-dchiya, .sb-havaamina{ margin-right: 52px; border-right-width: 6px; }
     .sb-teirutz, .sb-teshuvah{ margin-right: 14px; }
     .sb-maskana, .sb-teiku   { margin-right: 14px; }
@@ -232,6 +232,7 @@
 
     /* Per-type colors — 15 types */
     .sb-kushia      { background:#c0392b; }
+    .sb-signonit    { background:#d68910; }
     .sb-teirutz     { background:#1e8449; }
     .sb-sheela      { background:#e74c3c; }
     .sb-teshuvah    { background:#27ae60; }
@@ -1086,6 +1087,7 @@ function createRecognition(onInterim, onFinal, onEnd) {
 // ── Type definitions ──────────────────────────────────
 const GEMARA_TYPES = {
   kushia:     { he:'קושיא',      en:'Question/Challenge',  icon:'❓', cls:'sb-kushia',    flowShape:['{{','}}'],  color:'#c0392b' },
+  signonit:   { he:'שאלה סגנונית',en:'Structural Question', icon:'🧩', cls:'sb-signonit',  flowShape:['{{','}}'],  color:'#d68910' },
   teirutz:    { he:'תירוץ',      en:'Answer/Resolution',   icon:'✅', cls:'sb-teirutz',   flowShape:['([','])'],  color:'#1e8449' },
   sheela:     { he:'שאלה',       en:'Inquiry',             icon:'🔵', cls:'sb-sheela',    flowShape:['{{','}}'],  color:'#e74c3c' },
   teshuvah:   { he:'תשובה',      en:'Response',            icon:'💬', cls:'sb-teshuvah',  flowShape:['([','])'],  color:'#27ae60' },
@@ -1147,8 +1149,12 @@ const GEMARA_ANCHORED = [
   ['mishnah',    [A('תנן התם|תנן|מתניתין|מתני\'|במתניתין')]],
   // Baraita citation
   ['brayta',     [A('תנו רבנן|ת"ר|תניא נמי|תניא אידך|תניא|דתניא|כדתניא|תנא|דתני')]],
+  // Structural / stylistic question — the Stam asks about HOW the text is
+  // phrased or arranged, not about a substantive contradiction (per the
+  // sinai.org.il "שאלות סגנוניות" distinction). Must precede kushia.
+  ['signonit',   [A('תנא היכא קאי|היכא קאי|מאי שנא|מאי איריא|אי הכי|מכדי|ותו|ליתני|ליתנייה|הא תו למה לי|למה לי למתני|מאי קא משמע לן|אמאי תנא|מאי תנא|הוה ליה למתני')]],
   // Objection / contradiction raised against a position (classic kushia)
-  ['kushia',     [A('מיתיבי|איתיביה|ואיתיביה|מותיב|ורמינהו|רמינהו|ורמי|תא שמע|לימא מסייע|לימא תיהוי|מנא הני מילי|מנלן|מנא לן|והתניא|והתנן|והאמר|והכתיב|מאי טעמא|מאי שנא|אמאי|למה לי|הא תינח|מי לא עסקינן|אי הכי|מכדי|ותו|היכא קאי|הניחא|מאי איכא למימר|מי איכא')]],
+  ['kushia',     [A('מיתיבי|איתיביה|ואיתיביה|מותיב|ורמינהו|רמינהו|ורמי|תא שמע|לימא מסייע|לימא תיהוי|מנא הני מילי|מנלן|מנא לן|והתניא|והתנן|והאמר|והכתיב|מאי טעמא|אמאי|למה לי|הא תינח|מי לא עסקינן|הניחא|מאי איכא למימר|מי איכא')]],
   // Distinction / rejection of a proof or contradiction
   ['dchiya',     [A('לא קשיא|שאני התם|שאני הכא|שאני|וכי תימא|כי תימא|ולא היא|מי דמי|הא מני|לעולם')]],
   // Resolution / answer to a difficulty
