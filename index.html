@@ -13,10 +13,12 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --bg:#f2f3f7; --surface:#ffffff; --border:rgba(0,0,0,.08);
-      --text:#15151a; --text2:#6e6e78; --accent:#0a84ff; --accent2:#5e5ce6;
-      --shadow:0 8px 30px rgba(20,20,40,.08); --shadow-lg:0 18px 50px rgba(20,20,40,.14);
-      --radius:18px;
+      --bg:#eef1f5; --surface:#ffffff; --border:rgba(22,34,54,.10);
+      --text:#172033; --text2:#5b6677; --accent:#2c4a7c; --accent2:#1f3a5f;
+      --gold:#9a7b3f;
+      --shadow:0 6px 24px rgba(23,32,51,.07); --shadow-lg:0 16px 44px rgba(23,32,51,.13);
+      --radius:14px;
+      --grad:linear-gradient(120deg,#1f3357 0%,#2c4a7c 55%,#35617f 100%);
       --serif:'Frank Ruhl Libre','David Libre',serif;
     }
     html { scroll-behavior:smooth; }
@@ -24,8 +26,8 @@
       font-family:'Heebo',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
       color:var(--text); direction:rtl; min-height:100vh;
       background:
-        radial-gradient(1100px 600px at 90% -8%, rgba(94,92,230,.10), transparent 60%),
-        radial-gradient(900px 600px at -5% 10%, rgba(10,132,255,.10), transparent 55%),
+        radial-gradient(1100px 600px at 90% -8%, rgba(31,58,95,.07), transparent 60%),
+        radial-gradient(900px 600px at -5% 10%, rgba(44,74,124,.07), transparent 55%),
         var(--bg);
       background-attachment:fixed;
     }
@@ -46,7 +48,7 @@
       position:sticky; top:0; z-index:90;
     }
     nav .logo { font-size:1.3rem; font-weight:800; margin-left:auto; letter-spacing:-.5px;
-      background:linear-gradient(120deg,#0a84ff,#5e5ce6 60%,#bf5af2);
+      background:var(--grad);
       -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
     }
     /* Liquid-glass segmented control with sliding pill */
@@ -60,7 +62,7 @@
       border-radius:11px; z-index:0;
       background:linear-gradient(180deg,rgba(255,255,255,.98),rgba(255,255,255,.85));
       box-shadow:0 2px 8px rgba(20,20,40,.16), inset 0 1px 0 rgba(255,255,255,.9), inset 0 0 0 1px rgba(255,255,255,.6);
-      transition:transform .5s cubic-bezier(.34,1.45,.5,1), width .5s cubic-bezier(.34,1.45,.5,1);
+      transition:transform .4s cubic-bezier(.4,0,.2,1), width .4s cubic-bezier(.4,0,.2,1);
       will-change:transform,width;
     }
     .nav-tab {
@@ -76,9 +78,9 @@
     /* Hero */
     .hero { max-width:1100px; margin:26px auto 4px; padding:0 24px; }
     .hero-inner {
-      position:relative; overflow:hidden; border-radius:24px; padding:30px 32px;
-      background:linear-gradient(120deg,#0a84ff 0%,#5e5ce6 55%,#bf5af2 100%);
-      box-shadow:0 18px 44px rgba(94,92,230,.32);
+      position:relative; overflow:hidden; border-radius:16px; padding:30px 32px;
+      background:var(--grad);
+      box-shadow:0 14px 36px rgba(31,51,87,.28);
     }
     .hero-inner::after {
       content:''; position:absolute; inset:0;
@@ -107,14 +109,14 @@
     }
     .btn:active { transform:scale(.96); }
     .btn:disabled { opacity:.35; cursor:not-allowed; box-shadow:none; }
-    .btn-primary { background:linear-gradient(135deg,#0a84ff,#0066d6); color:#fff; box-shadow:0 6px 18px rgba(10,132,255,.36); }
-    .btn-success { background:linear-gradient(135deg,#34d164,#26a64c); color:#fff; box-shadow:0 6px 18px rgba(48,209,88,.34); }
-    .btn-danger  { background:linear-gradient(135deg,#ff453a,#e0241a); color:#fff; box-shadow:0 6px 18px rgba(255,59,48,.34); }
-    .btn-secondary { background:rgba(120,120,140,.14); color:var(--text); }
-    .btn-export { background:linear-gradient(135deg,#6e6ce8,#4f46d6); color:#fff; box-shadow:0 6px 18px rgba(94,92,230,.34); }
-    .btn-record { background:linear-gradient(135deg,#ff453a,#e0241a); color:#fff; box-shadow:0 6px 18px rgba(255,59,48,.34); }
-    .btn-stop   { background:linear-gradient(135deg,#6e6e78,#48484e); color:#fff; }
-    .btn-calibrate { background:linear-gradient(135deg,#0a84ff,#0066d6); color:#fff; box-shadow:0 6px 18px rgba(10,132,255,.34); }
+    .btn-primary { background:linear-gradient(135deg,#2c4a7c,#1f3a5f); color:#fff; box-shadow:0 5px 16px rgba(31,58,95,.30); }
+    .btn-success { background:linear-gradient(135deg,#2f7d54,#1f6342); color:#fff; box-shadow:0 5px 16px rgba(31,99,66,.28); }
+    .btn-danger  { background:linear-gradient(135deg,#b23b34,#8f2a24); color:#fff; box-shadow:0 5px 16px rgba(143,42,36,.28); }
+    .btn-secondary { background:rgba(31,58,95,.09); color:var(--text); }
+    .btn-export { background:linear-gradient(135deg,#3a4a6b,#2a3650); color:#fff; box-shadow:0 5px 16px rgba(42,54,80,.28); }
+    .btn-record { background:linear-gradient(135deg,#b23b34,#8f2a24); color:#fff; box-shadow:0 5px 16px rgba(143,42,36,.28); }
+    .btn-stop   { background:linear-gradient(135deg,#5b6677,#3f4756); color:#fff; }
+    .btn-calibrate { background:linear-gradient(135deg,#2c4a7c,#1f3a5f); color:#fff; box-shadow:0 5px 16px rgba(31,58,95,.28); }
     .btn-sm { padding:7px 15px; font-size:.82rem; }
     .btn:hover:not(:disabled) { filter:brightness(1.06); transform:translateY(-1.5px); }
 
@@ -415,7 +417,7 @@
     .brand-text { display:flex; flex-direction:column; line-height:1.12; }
     .brand-text b {
       font-size:1.12rem; font-weight:800; letter-spacing:-.4px;
-      background:linear-gradient(120deg,#0a84ff,#5e5ce6 60%,#bf5af2);
+      background:var(--grad);
       -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
     }
     .brand-text span { font-size:.64rem; color:var(--text2); font-weight:600; letter-spacing:1.5px; }
@@ -423,12 +425,12 @@
 
     /* ── HOME ── */
     #screen-home { max-width:1040px; }
-    .home-seal { width:96px; height:96px; margin:0 auto 22px; display:block; filter:drop-shadow(0 10px 22px rgba(94,92,230,.35)); animation:sealIn .7s cubic-bezier(.22,.61,.36,1) both; }
+    .home-seal { width:96px; height:96px; margin:0 auto 22px; display:block; filter:drop-shadow(0 10px 22px rgba(31,58,95,.30)); animation:sealIn .7s cubic-bezier(.22,.61,.36,1) both; }
     @keyframes sealIn { from { opacity:0; transform:translateY(-12px) scale(.9); } to { opacity:1; transform:none; } }
     .home-hero { text-align:center; padding:46px 28px 40px; margin-bottom:30px; }
     .home-hero h1 {
       font-size:2.7rem; font-weight:800; letter-spacing:-1px; margin-bottom:12px;
-      background:linear-gradient(120deg,#0a84ff,#5e5ce6 55%,#bf5af2);
+      background:var(--grad);
       -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent;
     }
     .home-hero p { color:var(--text2); font-size:1.1rem; font-weight:500; max-width:460px; margin:0 auto; line-height:1.5; }
@@ -436,7 +438,7 @@
     .mode-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:20px; }
     .mode-card {
       position:relative; overflow:hidden; cursor:pointer; text-align:center;
-      padding:34px 24px 28px; border-radius:22px;
+      padding:34px 24px 28px; border-radius:16px;
       background:var(--surface); border:1px solid var(--border);
       box-shadow:var(--shadow);
       transition:transform .28s cubic-bezier(.22,.61,.36,1), box-shadow .28s;
@@ -448,11 +450,11 @@
       content:''; position:absolute; inset:0 0 auto 0; height:4px;
       background:var(--mc-grad); opacity:0; transition:opacity .28s;
     }
-    .mode-card:hover { transform:translateY(-7px); box-shadow:var(--shadow-lg); }
+    .mode-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-lg); }
     .mode-card:hover::after { opacity:1; }
-    .mode-card:hover .mode-ic { transform:scale(1.08) rotate(-3deg); }
+    .mode-card:hover .mode-ic { transform:scale(1.04); }
     .mode-ic {
-      width:74px; height:74px; margin:0 auto 18px; border-radius:22px;
+      width:72px; height:72px; margin:0 auto 18px; border-radius:16px;
       display:flex; align-items:center; justify-content:center; font-size:2rem;
       background:var(--mc-grad); color:#fff;
       box-shadow:0 10px 24px var(--mc-glow);
@@ -464,9 +466,9 @@
     .mode-go { display:inline-block; margin-top:18px; font-weight:700; font-size:.9rem;
       background:var(--mc-grad); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
 
-    .mc-gemara   { --mc-grad:linear-gradient(135deg,#0a84ff,#0066d6); --mc-glow:rgba(10,132,255,.34); }
-    .mc-chavruta { --mc-grad:linear-gradient(135deg,#34d164,#1fa64c); --mc-glow:rgba(48,209,88,.32); }
-    .mc-shiur    { --mc-grad:linear-gradient(135deg,#ff9f0a,#ff6a00); --mc-glow:rgba(255,159,10,.32); }
+    .mc-gemara   { --mc-grad:linear-gradient(135deg,#2c4a7c,#1f3a5f); --mc-glow:rgba(31,58,95,.28); }
+    .mc-chavruta { --mc-grad:linear-gradient(135deg,#2f7d54,#1f6342); --mc-glow:rgba(31,99,66,.26); }
+    .mc-shiur    { --mc-grad:linear-gradient(135deg,#9a7b3f,#7a5f2c); --mc-glow:rgba(122,95,44,.28); }
 
     @media(max-width:760px){ .mode-grid{grid-template-columns:1fr;} .home-hero h1{font-size:2.1rem;} }
     @media(max-width:640px){ nav{flex-wrap:wrap;height:auto;padding:10px;} .nav-tabs{overflow-x:auto;} }
@@ -477,7 +479,7 @@
 <svg width="0" height="0" style="position:absolute">
   <defs>
     <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0a84ff"/><stop offset="0.55" stop-color="#5e5ce6"/><stop offset="1" stop-color="#bf5af2"/>
+      <stop offset="0" stop-color="#1f3357"/><stop offset="0.55" stop-color="#2c4a7c"/><stop offset="1" stop-color="#35617f"/>
     </linearGradient>
     <mask id="bookBite">
       <rect width="64" height="64" fill="white"/>
@@ -1078,6 +1080,104 @@ function createRecognition(onInterim, onFinal, onEnd) {
   r.onend = () => { if (onEnd) onEnd(); };
   r.onerror = e => console.warn('Speech error:', e.error);
   return r;
+}
+
+/* ══════════════════════════════════════════════════════
+   LOCAL WHISPER RECORDER  (Hebrew + Aramaic, via server.py)
+   ──────────────────────────────────────────────────────
+   Records the mic in short fixed windows; each window is a self-contained
+   webm/ogg blob POSTed to the local /transcribe endpoint, which runs Whisper
+   locally and returns Hebrew text. Far better than the Web Speech API for
+   Hebrew, and it actually copes with the Aramaic a rabbi mixes in.
+   A live audio meter proves the mic is on; "zero-buffer" feel is preserved by
+   appending each window's text the instant it returns. ═══════════════════ */
+class WhisperRecorder {
+  constructor({ onText, onMeter, onStatus, windowMs = 5000 } = {}) {
+    this.onText   = onText   || (() => {});
+    this.onMeter  = onMeter  || (() => {});
+    this.onStatus = onStatus || (() => {});
+    this.windowMs = windowMs;
+    this.running  = false;
+  }
+
+  _mime() {
+    const opts = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus', 'audio/ogg'];
+    for (const m of opts) if (window.MediaRecorder && MediaRecorder.isTypeSupported(m)) return m;
+    return '';
+  }
+
+  async start() {
+    this.stream = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true }
+    });
+    // Live meter so the user SEES the mic working.
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    const src = this.ctx.createMediaStreamSource(this.stream);
+    this.analyser = this.ctx.createAnalyser();
+    this.analyser.fftSize = 512;
+    src.connect(this.analyser);
+    this._buf = new Uint8Array(this.analyser.frequencyBinCount);
+    this.running = true;
+    this._meterLoop();
+    this._recordWindow();
+    this.onStatus('on');
+  }
+
+  _meterLoop() {
+    if (!this.running) return;
+    this.analyser.getByteTimeDomainData(this._buf);
+    let sum = 0;
+    for (let i = 0; i < this._buf.length; i++) { const v = (this._buf[i] - 128) / 128; sum += v * v; }
+    const rms = Math.sqrt(sum / this._buf.length);
+    this.onMeter(Math.min(100, Math.round(rms * 320)));
+    this._raf = requestAnimationFrame(() => this._meterLoop());
+  }
+
+  _recordWindow() {
+    if (!this.running) return;
+    let mr;
+    try { mr = new MediaRecorder(this.stream, this._mime() ? { mimeType: this._mime() } : undefined); }
+    catch (e) { this.onStatus('err'); return; }
+    const chunks = [];
+    mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+    mr.onstop = () => {
+      const blob = new Blob(chunks, { type: this._mime() || 'audio/webm' });
+      // Start the next window immediately to minimise the gap, then send.
+      if (this.running) this._recordWindow();
+      this._send(blob);
+    };
+    this.mr = mr;
+    mr.start();
+    this._winTimer = setTimeout(() => { try { if (mr.state !== 'inactive') mr.stop(); } catch (e) {} }, this.windowMs);
+  }
+
+  async _send(blob) {
+    if (!blob || blob.size < 1400) return;   // basically silence — skip
+    try {
+      const res = await fetch('/transcribe', {
+        method: 'POST',
+        headers: { 'Content-Type': blob.type || 'application/octet-stream' },
+        body: blob
+      });
+      if (!res.ok) { this.onStatus('err'); return; }
+      const data = await res.json();
+      const text = (data.text || '').trim();
+      if (text) this.onText(text);
+    } catch (e) {
+      this.onStatus('offline');   // backend not running
+    }
+  }
+
+  stop() {
+    this.running = false;
+    clearTimeout(this._winTimer);
+    if (this._raf) cancelAnimationFrame(this._raf);
+    try { if (this.mr && this.mr.state !== 'inactive') this.mr.stop(); } catch (e) {}
+    if (this.ctx) { try { this.ctx.close(); } catch (e) {} this.ctx = null; }
+    if (this.stream) { this.stream.getTracks().forEach(t => t.stop()); this.stream = null; }
+    this.onMeter(0);
+    this.onStatus('off');
+  }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -2120,41 +2220,47 @@ function toggleLectureRecording() {
 }
 
 async function startLectureRecording() {
-  const micEl = document.getElementById('lecture-mic');
-  // Spin up an audio meter so the user can SEE the mic is live and working.
+  const micEl  = document.getElementById('lecture-mic');
+  const subEl  = document.getElementById('lecture-mic-sub');
+  const statEl = document.getElementById('lecture-rec-status');
+
+  lec.recorder = new WhisperRecorder({
+    windowMs: 5000,
+    onMeter: pct => { document.getElementById('lecture-meter').style.width = pct + '%'; },
+    onText:  text => finalizeLectureUtterance(text),
+    onStatus: s => {
+      if (s === 'offline') {
+        statEl.textContent = '⚠️ השרת המקומי כבוי';
+        subEl.textContent  = 'הפעל את server.py כדי לתמלל (Whisper מקומי)';
+      } else if (s === 'err') {
+        subEl.textContent = 'שגיאת תמלול — בודק שוב…';
+      }
+    }
+  });
+
   try {
-    if (!lec.detector) lec.detector = new SpeakerDetector();
-    await lec.detector.init();
-    lec.detector.meterCb = pct => {
-      document.getElementById('lecture-meter').style.width = pct + '%';
-    };
-  } catch(e) {
-    document.getElementById('lecture-mic-sub').textContent =
-      e && e.name === 'NotAllowedError' ? 'גישה למיקרופון נדחתה — אפשר בדפדפן' : 'לא הצלחתי לפתוח מיקרופון';
+    await lec.recorder.start();
+  } catch (e) {
+    subEl.textContent = (e && e.name === 'NotAllowedError')
+      ? 'גישה למיקרופון נדחתה — אפשר בדפדפן'
+      : 'לא הצלחתי לפתוח מיקרופון';
+    lec.recorder = null;
     return;
   }
 
-  const rec = createRecognition(
-    text => updateLectureInterim(text),
-    text => finalizeLectureUtterance(text),
-    ()   => { if (lec.isRecording) { try { lec.recognition.start(); } catch(e){} } }
-  );
-  if (!rec) return;
-  lec.recognition = rec;
   lec.isRecording = true;
-  rec.start();
-
   micEl.className = 'mic-live on';
-  document.getElementById('lecture-rec-status').textContent = '🔴 המיקרופון פעיל — מקליט';
-  document.getElementById('lecture-mic-sub').textContent = 'התרשים מתעדכן בזמן אמת';
+  statEl.textContent = '🔴 המיקרופון פעיל — מתמלל מקומית (Whisper)';
+  subEl.textContent  = 'התרשים מתעדכן בזמן אמת — עברית וארמית';
   document.getElementById('btn-lec-record').textContent = '⏹ עצור הקלטה';
   document.getElementById('btn-lec-record').className = 'btn btn-stop';
+  flowGhost(document.getElementById('lecture-flowchart'),
+    { cls: 'fn-rabbi', name: lec.rabbiName, text: 'מאזין…' });
 }
 
 function stopLectureRecording() {
   lec.isRecording = false;
-  if (lec.recognition) { try { lec.recognition.stop(); } catch(e){} lec.recognition = null; }
-  if (lec.detector) { lec.detector.meterCb = null; }
+  if (lec.recorder) { try { lec.recorder.stop(); } catch(e){} lec.recorder = null; }
   document.getElementById('lecture-meter').style.width = '0%';
   flowRemoveGhost(document.getElementById('lecture-flowchart'));
   document.getElementById('lecture-mic').className = 'mic-live';
@@ -2164,17 +2270,16 @@ function stopLectureRecording() {
   document.getElementById('btn-lec-record').className = 'btn btn-record';
 }
 
-function updateLectureInterim(text) {
-  // Live ghost node — instant, no buffer. (Always the rabbi; he may mix Aramaic.)
-  flowGhost(document.getElementById('lecture-flowchart'),
-    { cls: 'fn-rabbi', name: lec.rabbiName, text: flowSnippet(text) });
-}
-
 function finalizeLectureUtterance(text) {
   lec.entries.push({ role: 'rabbi', speaker: lec.rabbiName, text, time: nowTime() });
-  // Zero-buffer: append immediately to the live DOM flow.
+  // Zero-buffer: append immediately to the live DOM flow (full text, not a snippet —
+  // a shiur transcript is worth reading in full).
   flowAppendNode(document.getElementById('lecture-flowchart'),
-    { cls: 'fn-rabbi', name: lec.rabbiName, text: flowSnippet(text), time: nowTime() });
+    { cls: 'fn-rabbi', name: lec.rabbiName, text: text, time: nowTime() });
+  // Keep a fresh "listening" ghost at the bottom while recording continues.
+  if (lec.isRecording)
+    flowGhost(document.getElementById('lecture-flowchart'),
+      { cls: 'fn-rabbi', name: lec.rabbiName, text: 'מאזין…' });
 }
 
 function resetLecture() {

@@ -33,8 +33,9 @@ A modern, self-contained Hebrew Torah/Talmud learning tool built for yeshiva cla
 - Setup: enter rabbi name + topic → **start immediately, no voice setup**
 - Stripped-down UI by design: **just a live mic indicator + the chart** — no chat, no text boxes, no speaker toggles
 - Everything attributed to the rabbi (he speaks ~95% of a shiur, freely mixing Hebrew and Aramaic)
-- **True zero-buffer flow**: each finalized phrase is appended as a DOM card the instant it's recognized; the phrase currently being spoken shows as a live "ghost" node at the bottom
-- **Plain lecture-chart style**: clean blue cards in a linear top-to-bottom flow (not Gemara-style analysis)
+- **Local Whisper transcription**: a small Python backend (`server.py`) runs OpenAI Whisper locally via `faster-whisper`, so Hebrew **and the Aramaic** a rabbi mixes in are transcribed by a real model — far better than the browser's Web Speech API, and audio never leaves the machine
+- **Near-real-time flow**: the mic is recorded in short windows, each transcribed locally and appended to the live DOM chart the instant it returns; a "listening" ghost node sits at the bottom
+- **Plain lecture-chart style**: clean cards in a linear top-to-bottom flow (not Gemara-style analysis)
 
 ---
 
@@ -46,7 +47,8 @@ A modern, self-contained Hebrew Torah/Talmud learning tool built for yeshiva cla
 | Fonts | Google Fonts (Heebo + Frank Ruhl Libre) |
 | Flowcharts | Mermaid v10 for Mode 1 (static); incremental DOM cards for the live modes (zero-buffer) |
 | PDF export | html2canvas + jsPDF (CDN) |
-| Speech recognition | Web Speech API (`he-IL`, continuous) |
+| Speech recognition (Modes 1–2) | Web Speech API (`he-IL`, continuous) |
+| Speech recognition (Mode 3) | **Local Whisper** via `server.py` + `faster-whisper` (Hebrew + Aramaic) |
 | Voice ID | Custom `SpeakerDetector` class (getUserMedia + AudioContext) |
 | Gemara text | Sefaria REST API (no key required) |
 | State | In-memory only (resets on refresh) |
@@ -55,15 +57,36 @@ A modern, self-contained Hebrew Torah/Talmud learning tool built for yeshiva cla
 
 ## 🚀 Running Locally
 
+### Quick start (Modes 1 & 2 only)
 ```bash
 git clone https://github.com/YOUR_USERNAME/chavrita.git
 cd chavrita
-python3 -m http.server 8080
+python3 -m http.server 8097
+```
+Then open **http://localhost:8097** in Chrome.
+
+### Full setup with local Whisper (needed for Mode 3 — Shiur)
+The lecture mode transcribes Hebrew + Aramaic with a **local Whisper model**, so
+you run the bundled Python backend (which also serves the app):
+
+```bash
+cd chavrita
+python3 -m venv .venv
+./.venv/bin/pip install -r requirements.txt
+./.venv/bin/python server.py
+```
+Then open **http://localhost:8097**. The model downloads once (cached in
+`~/.cache/huggingface`) and then runs fully offline.
+
+Pick accuracy vs. speed with `WHISPER_MODEL`:
+```bash
+WHISPER_MODEL=small    ./.venv/bin/python server.py   # fastest
+WHISPER_MODEL=medium   ./.venv/bin/python server.py   # default, balanced
+WHISPER_MODEL=large-v3 ./.venv/bin/python server.py   # best, slower on CPU
 ```
 
-Then open **http://localhost:8080** in Chrome.
-
-> **Why a server?** The microphone (`getUserMedia`) and Sefaria API (CORS) require a proper origin — `file://` won't work.
+> **Why a server?** The microphone (`getUserMedia`), Sefaria API (CORS), and the
+> local `/transcribe` endpoint all require a proper origin — `file://` won't work.
 
 ---
 
