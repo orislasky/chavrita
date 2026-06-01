@@ -39,7 +39,10 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PORT = int(os.environ.get("PORT", "8097"))
-MODEL_NAME = os.environ.get("WHISPER_MODEL", "medium")
+# 'small' is the sweet spot on CPU: ~0.4s per window (real-time) with decent
+# Hebrew+Aramaic accuracy. 'medium'/'large' are far more accurate but on an
+# older Intel CPU (no AVX) they take ~20s per window — unusable for live use.
+MODEL_NAME = os.environ.get("WHISPER_MODEL", "small")
 # int8 keeps CPU inference fast with minimal accuracy loss.
 COMPUTE_TYPE = os.environ.get("WHISPER_COMPUTE", "int8")
 LANGUAGE = os.environ.get("WHISPER_LANG", "he")
