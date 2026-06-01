@@ -13,10 +13,11 @@ A modern, self-contained Hebrew Torah/Talmud learning tool built for yeshiva cla
 - **Smart pre-splitting**: each Sefaria segment is broken at discourse markers (`תא שמע`, `אמר רב`, `תניא`, `:` etc.) before analysis — so a single long paragraph becomes multiple individually-tagged units
 - **18 discourse types** auto-detected via Aramaic/Hebrew pattern matching:
   `קושיא · תירוץ · שאלה · תשובה · דעה · משנה · ברייתא · מעשה · הלכה · תיקו · מחלוקת · קל וחומר · דחייה · מסקנה · אגדה · פסוק · הוה אמינא · כללי`
+- **Cross-page aware**: if a daf opens in the *middle* of a sugya (a connective like `אלא`/`והא`/`לא קשיא`), the app automatically pulls the tail of the previous amud from Sefaria so the discussion starts where it really begins
 - Displayed as **color-coded puzzle blocks** (Scratch-style notch connectors) grouped into סוגיות with auto-generated Hebrew titles
 - **Mermaid v10 flowchart** — subgraph per sugya, classDef per type, safe shape set
+- **Hover any flowchart node** to see the full original segment text + its discourse type (Hebrew + English)
 - Manual type override dropdown per block
-- Hover tooltip shows type name (Hebrew + English)
 - PDF export via html2canvas + jsPDF
 
 ### Mode 2 — Chavruta (חברותא)
@@ -24,16 +25,16 @@ A modern, self-contained Hebrew Torah/Talmud learning tool built for yeshiva cla
 - **Voice calibration wizard**: each speaker talks for 4 seconds; the app learns their voice profile using `AudioContext` pitch autocorrelation + spectral centroid + zero-crossing rate
 - **Auto speaker identification** — no manual toggling; the app knows who's talking
 - Live **chat history** with color-coded speech bubbles (blue right / white left) + timestamps
-- **Semantic flowchart**: nodes show `[Name · TypeIcon TypeName — key words]` — a meaningful summary, not a raw transcript
-- Flowchart updates with 100ms debounce after each finalized utterance
+- **Auto speaker detection** by majority vote: the audio analyser is sampled ~11×/sec and each utterance is attributed to whoever was talking most during it (robust to Aramaic too)
+- **Zero-buffer flow map**: each utterance is appended as a DOM card immediately (blue = learner A on the right, green = learner B on the left), with a live ghost node for the current phrase
 - PDF export of the full conversation map
 
 ### Mode 3 — Lecture / Shiur (שיעור)
-- Setup: enter rabbi name + topic → **start immediately, no calibration**
-- Everything attributed to the rabbi (rabbi speaks ~95% of a shiur)
-- **Zero-buffer live flowchart**: updates the instant each phrase is recognized — no setTimeout delay
-- **Plain lecture-chart style**: blue rectangles, linear top-to-bottom flow, first 6 content words per node (not Gemara-style analysis)
-- "Last said" live indicator shows the current phrase as it's being spoken
+- Setup: enter rabbi name + topic → **start immediately, no voice setup**
+- Stripped-down UI by design: **just a live mic indicator + the chart** — no chat, no text boxes, no speaker toggles
+- Everything attributed to the rabbi (he speaks ~95% of a shiur, freely mixing Hebrew and Aramaic)
+- **True zero-buffer flow**: each finalized phrase is appended as a DOM card the instant it's recognized; the phrase currently being spoken shows as a live "ghost" node at the bottom
+- **Plain lecture-chart style**: clean blue cards in a linear top-to-bottom flow (not Gemara-style analysis)
 
 ---
 
@@ -43,7 +44,7 @@ A modern, self-contained Hebrew Torah/Talmud learning tool built for yeshiva cla
 |---|---|
 | Hosting | None — pure static HTML |
 | Fonts | Google Fonts (Heebo + Frank Ruhl Libre) |
-| Flowcharts | Mermaid v10 (CDN) |
+| Flowcharts | Mermaid v10 for Mode 1 (static); incremental DOM cards for the live modes (zero-buffer) |
 | PDF export | html2canvas + jsPDF (CDN) |
 | Speech recognition | Web Speech API (`he-IL`, continuous) |
 | Voice ID | Custom `SpeakerDetector` class (getUserMedia + AudioContext) |
