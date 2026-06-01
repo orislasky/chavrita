@@ -1112,69 +1112,96 @@ function stripNikud(text) {
   return text.replace(/[֑-ׇ׳״]/g, '').replace(/\s+/g, ' ');
 }
 
-// ── Detection patterns (ordered — first match wins) ───
-// All patterns written WITHOUT nikud; stripNikud() is called before testing.
-const GEMARA_PATTERNS = [
-  // Must come first — very specific openers
-  ['teiku',      [/תיקו/, /תהי/, /בעיא לא איפשיטא/, /ואיבעית אימא/]],
-  ['havaamina',  [/הוה אמינא/, /סלקא דעתך/, /סד"א/, /ס"ד/]],
-  ['maskana',    [/שמע מינה/, /ש"מ/, /מכלל ד/, /אלא לאו/, /הכי קאמר/, /וכן הלכה/, /פשיטא/]],
-  ['kalvchomer', [/קל וחומר/, /ק"ו/, /ומה.*כל שכן/, /מה.*אף/]],
+// ── Detection of Talmudic discourse type ──────────────
+// Methodology (based on the standard analysis of sugya structure — the
+// dialectical give-and-take "shakla v'tarya" of the anonymous Stam, with
+// its layered tannaitic/amoraic sources):
+//
+//   • The single most reliable signal of a discourse move is the OPENING
+//     marker of the unit. The Stam announces almost every move with a fixed
+//     formula (מיתיבי, תא שמע, לא קשיא, אלא, שמע מינה …). So we test
+//     ANCHORED patterns (segment-initial, optionally after a leading "ו" or a
+//     short rabbinic attribution) FIRST — these are high-precision.
+//   • Only if no opener matches do we fall back to LOOSE patterns that may
+//     appear anywhere in the unit (weaker, lower precision).
+//
+// All patterns are written WITHOUT nikud; stripNikud() runs before testing.
+// Sources consulted: en.wikipedia.org/wiki/Sugya ·
+// myjewishlearning.com/article/talmud-words-and-phrases ·
+// JTS Hauptman "Layered Structure of the Babylonian Talmud" ·
+// Jastrow Aramaic abbreviations · daf-yomi.com.
 
-  // Challenges / objections
-  ['kushia',     [/תא שמע/, /קשיא/, /קשה/, /מאי קאמר/, /מאי קשיא/, /מאי טעמא/,
-                  /מנא הני מילי/, /מנלן/, /ורמינהו/, /ומותיב/, /איתיביה/, /מותיב/,
-                  /רמי.*ארמי/, /פשיטא/, /היכי דמי/, /והתנן/, /והתניא/, /והאמר/,
-                  /אמאי/, /מ"ט/, /מאי טעמיה/]],
+// Helper: allow a marker at the start of the unit, after an optional leading
+// vav ("ו") and/or a short rabbinic attribution ("אמר רב X", "א"ר", "ר' X").
+// Optional leading "גמ" (Gemara marker) and/or one short rabbinic attribution.
+const _LEAD = '^(?:ו?)(?:גמ\\s+)?(?:(?:א(?:מר|"ר)|רב|ר\'|רבי|רבא|אביי|רבה)\\s+[^\\s]{1,12}\\s+){0,1}';
+const A = (marker) => new RegExp(_LEAD + '(?:' + marker + ')');
 
-  // Rejections / deflections
-  ['dchiya',     [/לא קשיא/, /ודחי/, /ודחינן/, /שאני/, /שאני התם/, /הא לא קשיא/,
-                  /לא תימא/, /כי תימא/, /ולא היא/, /ולא אמרן/, /הא מני/]],
-
-  // Dispute
-  ['machloket',  [/פליגי/, /מחלוקת/, /ורבי \w+ אומר/, /ור' \w+ אומר/, /איכא דאמרי/,
-                  /אמר חד.*ואמר חד/, /חד אמר.*וחד אמר/]],
-
-  // Source texts
-  ['brayta',     [/תניא/, /תנו רבנן/, /ת"ר/, /דתניא/, /תנן התם/, /כדתניא/,
-                  /ברייתא/, /מדקתני/, /מדקתנן/, /בברייתא/]],
-  ['mishnah',    [/תנן/, /מתני'/, /מתניתין/, /דתנן/, /כדתנן/, /מדתנן/]],
-
-  // Biblical sources
-  ['pasuk',      [/שנאמר/, /שנא'/, /דכתיב/, /כתיב/, /דאמר קרא/, /קרא אמר/,
-                  /מאי דכתיב/, /על הפסוק/, /בראשית/, /שמות/, /ויקרא/, /במדבר/,
-                  /דברים/, /תהילים/, /ישעיה/, /ירמיה/, /יחזקאל/, /משלי/, /קהלת/]],
-
-  // Narrative / story
-  ['maaseh',     [/מעשה ב/, /מעשה ש/, /הוה עובדא/, /עובדא הוה/, /ההוא גברא/,
-                  /ההיא איתתא/, /פעם אחת/, /אמרו עליו/]],
-
+// ANCHORED rules — segment-initial openers (ordered, first match wins).
+const GEMARA_ANCHORED = [
+  // Unresolved dilemma
+  ['teiku',      [A('תיקו|תהי בה|בעיא לא איפשיטא')]],
+  // A raised dilemma / inquiry (ba'aya)
+  ['sheela',     [A('איבעיא להו|בעי מיניה|בעא מיניה|מיבעיא ליה|איבעיא')]],
+  // Mishnah citation
+  ['mishnah',    [A('תנן התם|תנן|מתניתין|מתני\'|במתניתין')]],
+  // Baraita citation
+  ['brayta',     [A('תנו רבנן|ת"ר|תניא נמי|תניא אידך|תניא|דתניא|כדתניא|תנא|דתני')]],
+  // Objection / contradiction raised against a position (classic kushia)
+  ['kushia',     [A('מיתיבי|איתיביה|ואיתיביה|מותיב|ורמינהו|רמינהו|ורמי|תא שמע|לימא מסייע|לימא תיהוי|מנא הני מילי|מנלן|מנא לן|והתניא|והתנן|והאמר|והכתיב|מאי טעמא|מאי שנא|אמאי|למה לי|הא תינח|מי לא עסקינן|אי הכי|מכדי|ותו|היכא קאי|הניחא|מאי איכא למימר|מי איכא')]],
+  // Distinction / rejection of a proof or contradiction
+  ['dchiya',     [A('לא קשיא|שאני התם|שאני הכא|שאני|וכי תימא|כי תימא|ולא היא|מי דמי|הא מני|לעולם')]],
+  // Resolution / answer to a difficulty
+  ['teirutz',    [A('ומשני|משני|ומתרצינן|מתרץ|הא קא משמע לן|הא קמ"ל|קא משמע לן|קמ"ל|אלא אמר|איבעית אימא|אי בעית אימא|ואיבעית אימא|הכי קאמר|לא צריכא|מהו דתימא|אלא')]],
+  // Conclusion drawn / proof accepted
+  ['maskana',    [A('שמע מינה|ש"מ|אלא לאו|אלא מאי|הילכך|הלכתא|מסקנא|דכולי עלמא')]],
+  // A fortiori inference
+  ['kalvchomer', [A('קל וחומר|ק"ו|ומה')]],
+  // Initial (later rejected) assumption
+  ['havaamina',  [A('הוה אמינא|סלקא דעתך|סלקא דעתך אמינא|סד"א|ס"ד|מהו דתימא|הוה סלקא')]],
+  // Scriptural verse cited
+  ['pasuk',      [A('שנאמר|שנא\'|דכתיב|וכתיב|כתיב|דאמר קרא|אמר קרא|תלמוד לומר|ת"ל')]],
+  // Narrative precedent
+  ['maaseh',     [A('מעשה ב|מעשה ש|הוה עובדא|עובדא הוה|ההוא גברא|ההיא איתתא|ההוא|פעם אחת|אמרו עליו|שוב מעשה')]],
+  // Homiletic exposition
+  ['aggadah',    [A('דרש ר|דרש רב|דרש|אמר רבי \\S+ מאי דכתיב|פתח ר|למה נמשל')]],
+  // Amoraic stated tradition / opinion
+  ['daat',       [A('איתמר|אתמר|אמר רב|אמר רבי|אמר ר\'|אמר שמואל|אמר אביי|אמר רבא|אמר ר"ל|אמר ריש לקיש|א"ר|והאמר|דאמר רב|דאמר רבי|אמר מר|תנא קמא'),
+                  /^(?:ו?)(?:רבי|ר'|רבן|רבן גמליאל|בית הלל|בית שמאי|חכמים|ר"א|ר"ע)\s+\S*\s*(?:אומר|אומרים|סבר|סוברים)/]],
   // Legal ruling
-  ['halacha',    [/הלכה כ/, /הלכתא/, /פסק הלכה/, /לדינא/, /נקטינן/, /קיימא לן/]],
+  ['halacha',    [A('הלכה כ|הלכתא כ|והלכתא|קיימא לן|קי"ל|נקטינן|לדינא')]],
+];
 
-  // Aggadah / homily
-  ['aggadah',    [/דרש/, /דרשה/, /מאי דכתיב/, /דרש רבי/, /דרשו חכמים/]],
-
-  // Answers
-  ['teirutz',    [/ומשני/, /ומתרץ/, /הא קמ"ל/, /אלא אמר/, /ויש לומר/, /תירוץ/,
-                  /אמר ליה/, /אמרה ליה/, /אמרו לו/, /השיב/]],
-
-  // Informational question
-  ['sheela',     [/שאלה/, /בעי מיניה/, /שאלו אותו/, /שאל ר/, /היכי דמי/,
-                  /מאי/, /כיצד/, /כלומר/, /כגון/]],
-
-  // Amoraic tradition reported
-  ['daat',       [/איתמר/, /אמר ר'/, /אמר רב/, /אמר רבי/, /אמר שמואל/,
-                  /אמר ר"ל/, /אמר ריש לקיש/, /ורבנן/, /ולדעת/, /לשיטת/,
-                  /לרמב"ם/, /לרש"י/, /לתוס'/, /ויש אומרים/, /דאמר/]],
-
-  // Response / answer
-  ['teshuvah',   [/תשובה/, /ענה ו/, /אמר לו/, /ואמר לו/, /השיב לו/]],
+// LOOSE rules — marker may appear anywhere (fallback, lower precision).
+const GEMARA_LOOSE = [
+  ['machloket',  [/פליגי/, /במחלוקת/, /מחלוקת/, /חד אמר.*וחד אמר/, /מר אמר.*ומר אמר/,
+                  /איכא דאמרי/, /רבי \S+ אומר.*ר(בי|') \S+ אומר/]],
+  ['teiku',      [/תיקו/]],
+  ['kalvchomer', [/קל וחומר/, /ק"ו/, /אם.*כל שכן/, /ומה.*אף/]],
+  ['kushia',     [/קשיא\b/, /תיקשי/, /ורמינהו/, /איתיביה/, /מנא הני מילי/, /מנלן/,
+                  /מאי טעמא/, /אמאי/, /היכי דמי/, /קא קשיא/]],
+  ['maskana',    [/שמע מינה/, /ש"מ/, /אלא לאו/, /הלכתא/]],
+  ['dchiya',     [/לא קשיא/, /שאני התם/, /ולא היא/, /הא מני/]],
+  ['brayta',     [/תניא/, /תנו רבנן/, /ת"ר/, /ברייתא/, /מדקתני/, /מדתני/],],
+  ['mishnah',    [/דתנן/, /מתניתין/, /מדתנן/, /במשנתנו/]],
+  ['pasuk',      [/שנאמר/, /דכתיב/, /דאמר קרא/, /תלמוד לומר/, /מקרא/]],
+  ['maaseh',     [/מעשה/, /עובדא/, /ההוא גברא/, /ההיא איתתא/]],
+  ['halacha',    [/הלכה כ/, /הלכתא/, /קיימא לן/, /קי"ל/, /נקטינן/]],
+  ['aggadah',    [/דרש/, /אגדה/, /למה נמשל/, /אמרו במערבא/]],
+  ['teirutz',    [/ומשני/, /הא קמ"ל/, /קא משמע לן/, /אלא אמר/, /לעולם/]],
+  ['daat',       [/איתמר/, /אמר רב/, /אמר רבי/, /אמר שמואל/, /א"ר/, /דאמר/,
+                  /לשיטת/, /לדעת/, /סבר/, /קסבר/]],
+  ['sheela',     [/איבעיא להו/, /בעי מיניה/, /כיצד/, /מהו/, /מי /]],
+  ['teshuvah',   [/אמר לו/, /אמר ליה/, /אמר להם/, /אמר להן/, /השיב/, /ענה/]],
 ];
 
 function detectType(text) {
-  const norm = stripNikud(text);
-  for (const [type, pats] of GEMARA_PATTERNS)
+  const norm = stripNikud(text).trim();
+  // Pass 1 — high-precision segment-initial openers
+  for (const [type, pats] of GEMARA_ANCHORED)
+    for (const p of pats) if (p.test(norm)) return type;
+  // Pass 2 — weaker contextual fallback (marker anywhere)
+  for (const [type, pats] of GEMARA_LOOSE)
     for (const p of pats) if (p.test(norm)) return type;
   return 'neutral';
 }
@@ -1438,6 +1465,29 @@ function sugyaTitle(sg, idx) {
   return `${td.icon} סוגיא ${idx + 1} — ${topic}`;
 }
 
+/* Structural post-pass — uses sugya position, not just per-segment markers.
+   1. Everything before the "גמ׳" divider is the opening Mishnah (it rarely
+      carries a תנן marker because it IS the mishnah being quoted in full).
+   2. A bare question (ends with "?") with no other marker is a Stam kushia.
+   3. A still-neutral segment that continues a content statement (mishnah /
+      baraita / verse / story / amoraic dictum) inherits that statement's type,
+      since colon-splitting often detaches a sentence from its opener. */
+function refineGemaraTypes(segs) {
+  const CONTENT = new Set(['mishnah','brayta','pasuk','maaseh','daat','aggadah','halacha']);
+  // 1 — Mishnah prefix
+  const gIdx = segs.findIndex(s => /(^|\s)גמ(\s|$|,|\.)/.test(stripNikud(s.text)));
+  if (gIdx > 0) {
+    for (let i = 0; i < gIdx; i++) if (segs[i].type === 'neutral') segs[i].type = 'mishnah';
+  }
+  // 2 & 3 — questions and content continuations
+  for (let i = 0; i < segs.length; i++) {
+    if (segs[i].type !== 'neutral') continue;
+    if (/[?]\s*$/.test(segs[i].text)) { segs[i].type = 'kushia'; continue; }
+    const prev = i > 0 ? segs[i-1].type : null;
+    if (prev && CONTENT.has(prev)) segs[i].type = prev;
+  }
+}
+
 function analyzeGemara() {
   const raw = document.getElementById('gemara-input').value.trim();
   if (!raw) { alert('אנא הכנס טקסט'); return; }
@@ -1445,6 +1495,7 @@ function analyzeGemara() {
   // Split each Sefaria segment into logical sub-units before tagging
   const chunks = lines.flatMap(line => splitGemaraLine(line));
   gemaraSegments = chunks.map((text, i) => ({ id:i, text:text.trim(), type:detectType(text) }));
+  refineGemaraTypes(gemaraSegments);
   renderGemaraLegend();
   renderGemaraSegments();
   document.getElementById('gemara-legend-card').style.display = 'block';
