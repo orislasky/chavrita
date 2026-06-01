@@ -1379,7 +1379,30 @@ function splitGemaraLine(line) {
     const slice = orig.slice(origStart, origEnd).trim();
     if (slice.length > 4) parts.push(slice);
   }
-  return parts;
+  return _mergeTinyParts(parts);
+}
+
+/* Splitting at every colon/opener can leave fragments too small to be their
+   own block in the chart (e.g. "עד חצות.", "דכתיב:", "ותו:"). Fold those back
+   into a neighbour so each block carries a meaningful, readable unit. */
+function _mergeTinyParts(parts) {
+  const MIN_WORDS = 4;
+  const wc = s => stripNikud(s).split(/\s+/).filter(Boolean).length;
+  const out = [];
+  for (let i = 0; i < parts.length; i++) {
+    const p = parts[i];
+    if (wc(p) < MIN_WORDS) {
+      // A short introducer ending in ":" belongs with what FOLLOWS it.
+      if (/[:]\s*$/.test(p) && i < parts.length - 1) {
+        parts[i + 1] = p + ' ' + parts[i + 1];
+        continue;
+      }
+      // Otherwise it's a trailing scrap — attach to the PREVIOUS block.
+      if (out.length) { out[out.length - 1] += ' ' + p; continue; }
+    }
+    out.push(p);
+  }
+  return out.length ? out : parts;
 }
 
 // ── Sefaria page counts ───────────────────────────────
@@ -1485,19 +1508,24 @@ function nowTime() { const d=new Date(); return d.getHours().toString().padStart
 
 let gemaraSegments = [];
 
-// Types that open a new sugya (logical unit)
-const SUGYA_OPENERS  = new Set(['mishnah','brayta','halacha']);
-// Types that close a sugya
+// Only a Mishnah reliably opens a genuinely new sugya. Baraitot (תניא/תנא) and
+// rulings are cited *inside* a discussion all the time, so they must NOT start
+// a new container — that was shattering one sugya into many tiny boxes.
+const SUGYA_OPENERS  = new Set(['mishnah']);
+// A sugya may close on a firm conclusion, but only if real discussion follows.
 const SUGYA_CLOSERS  = new Set(['maskana','teiku']);
+// A sugya must contain at least this many segments to stand on its own.
+const MIN_SUGYA_SEGS = 3;
 
 function groupIntoSugyot(segs) {
-  const sugyot = [];
+  let sugyot = [];
   let cur = { segments: [] };
   segs.forEach((seg, i) => {
     const prevType = i > 0 ? segs[i-1].type : null;
     const startsNew = i > 0 && (
       SUGYA_OPENERS.has(seg.type) ||
-      (prevType && SUGYA_CLOSERS.has(prevType))
+      // A closer only ends the sugya if the box already has real content.
+      (prevType && SUGYA_CLOSERS.has(prevType) && cur.segments.length >= MIN_SUGYA_SEGS)
     );
     if (startsNew && cur.segments.length) {
       sugyot.push(cur);
@@ -1506,7 +1534,30 @@ function groupIntoSugyot(segs) {
     cur.segments.push(seg);
   });
   if (cur.segments.length) sugyot.push(cur);
+
+  // Merge any under-sized container into a neighbour so the chart shows a few
+  // substantial sugyot rather than many fragments.
+  sugyot = _mergeTinySugyot(sugyot);
   return sugyot;
+}
+
+function _mergeTinySugyot(sugyot) {
+  if (sugyot.length <= 1) return sugyot;
+  const out = [];
+  for (const sg of sugyot) {
+    if (sg.segments.length < MIN_SUGYA_SEGS && out.length) {
+      // fold into the previous container
+      out[out.length - 1].segments.push(...sg.segments);
+    } else {
+      out.push(sg);
+    }
+  }
+  // If the very first container ended up tiny, pull it into the second.
+  if (out.length > 1 && out[0].segments.length < MIN_SUGYA_SEGS) {
+    out[1].segments.unshift(...out[0].segments);
+    out.shift();
+  }
+  return out;
 }
 
 // ── Discourse openers to strip before building titles ─
