@@ -47,6 +47,11 @@ LANGUAGE = os.environ.get("WHISPER_LANG", "he")
 # ── Lazy, thread-safe model singleton ─────────────────────────────────────
 _model = None
 _model_lock = threading.Lock()
+# faster-whisper's WhisperModel is NOT safe to call from multiple threads at
+# once — concurrent transcribe() calls corrupt state and hang, which then drops
+# the browser connection (BrokenPipe). Serialise every transcription so only one
+# runs at a time. The frontend also throttles to one in-flight request.
+_infer_lock = threading.Lock()
 
 
 def get_model():
@@ -73,17 +78,20 @@ def transcribe_bytes(audio_bytes: bytes) -> str:
         tmp.write(audio_bytes)
         tmp_path = tmp.name
     try:
-        segments, _info = model.transcribe(
-            tmp_path,
-            language=LANGUAGE,
-            task="transcribe",
-            vad_filter=True,                       # skip silence
-            vad_parameters=dict(min_silence_duration_ms=300),
-            beam_size=5,
-            condition_on_previous_text=False,      # each chunk independent
-            initial_prompt="שיעור גמרא בעברית ובארמית.",  # bias toward the domain
-        )
-        return "".join(s.text for s in segments).strip()
+        # One transcription at a time — the model is not thread-safe.
+        with _infer_lock:
+            segments, _info = model.transcribe(
+                tmp_path,
+                language=LANGUAGE,
+                task="transcribe",
+                vad_filter=True,                       # skip silence
+                vad_parameters=dict(min_silence_duration_ms=500,
+                                    speech_pad_ms=200),
+                beam_size=1,                           # fastest; keeps up on CPU
+                condition_on_previous_text=False,      # each chunk independent
+                initial_prompt="שיעור גמרא בעברית ובארמית.",  # bias toward the domain
+            )
+            return "".join(s.text for s in segments).strip()
     finally:
         try:
             os.unlink(tmp_path)
@@ -102,12 +110,17 @@ class Handler(SimpleHTTPRequestHandler):
 
     def _send_json(self, obj, status=200):
         body = json.dumps(obj, ensure_ascii=False).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Access-Control-Allow-Origin", "*")
-        self.end_headers()
-        self.wfile.write(body)
+        try:
+            self.send_response(status)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.send_header("Access-Control-Allow-Origin", "*")
+            self.end_headers()
+            self.wfile.write(body)
+        except (BrokenPipeError, ConnectionResetError):
+            # The browser hung up before we finished (it aborted the fetch, or
+            # the user stopped/reloaded). Nothing to send to — ignore quietly.
+            pass
 
     def do_OPTIONS(self):
         self.send_response(204)
@@ -132,10 +145,18 @@ class Handler(SimpleHTTPRequestHandler):
             if not audio:
                 self._send_json({"text": ""})
                 return
+            import time as _t
+            t0 = _t.time()
             text = transcribe_bytes(audio)
+            dt = _t.time() - t0
+            print(f"[transcribe] {len(audio)} bytes → {dt:.1f}s → "
+                  f"{repr(text)[:80]}", flush=True)
             self._send_json({"text": text})
+        except (BrokenPipeError, ConnectionResetError):
+            # Client aborted mid-request — already logged enough; stay quiet.
+            print("[transcribe] client disconnected before response", flush=True)
         except Exception as exc:  # noqa: BLE001 — report any failure to the client
-            sys.stderr.write(f"[transcribe error] {exc}\n")
+            print(f"[transcribe error] {exc}", flush=True)
             self._send_json({"error": str(exc)}, 500)
 
 

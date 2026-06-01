@@ -1142,17 +1142,43 @@ class WhisperRecorder {
     mr.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
     mr.onstop = () => {
       const blob = new Blob(chunks, { type: this._mime() || 'audio/webm' });
-      // Start the next window immediately to minimise the gap, then send.
+      // Start the next window immediately to minimise the gap, then queue send.
       if (this.running) this._recordWindow();
-      this._send(blob);
+      this._enqueue(blob);
     };
     this.mr = mr;
     mr.start();
     this._winTimer = setTimeout(() => { try { if (mr.state !== 'inactive') mr.stop(); } catch (e) {} }, this.windowMs);
   }
 
-  async _send(blob) {
+  // Sequential sender: the Whisper backend transcribes one window at a time, so
+  // we must NOT fire overlapping requests — that was crashing the server
+  // (BrokenPipe) and losing every result. Queue blobs and POST them in order,
+  // one in-flight at a time.
+  _enqueue(blob) {
     if (!blob || blob.size < 1400) return;   // basically silence — skip
+    this._queue = this._queue || [];
+    this._queue.push(blob);
+    // Guard against unbounded backlog if the CPU can't keep up: keep newest few.
+    if (this._queue.length > 4) this._queue.splice(0, this._queue.length - 4);
+    this._pump();
+  }
+
+  async _pump() {
+    if (this._sending) return;
+    this._sending = true;
+    try {
+      while (this._queue && this._queue.length) {
+        const blob = this._queue.shift();
+        await this._send(blob);
+        if (!this.running && !this._queue.length) break;
+      }
+    } finally {
+      this._sending = false;
+    }
+  }
+
+  async _send(blob) {
     try {
       const res = await fetch('/transcribe', {
         method: 'POST',
@@ -1162,9 +1188,9 @@ class WhisperRecorder {
       if (!res.ok) { this.onStatus('err'); return; }
       const data = await res.json();
       const text = (data.text || '').trim();
-      if (text) this.onText(text);
+      if (text) { this.onStatus('on'); this.onText(text); }
     } catch (e) {
-      this.onStatus('offline');   // backend not running
+      this.onStatus('offline');   // backend not running / aborted
     }
   }
 
@@ -1990,6 +2016,7 @@ let cv = {
   messages: [],
   detector: null,
   recognition: null,
+  recorder: null,
   isRecording: false,
   voteWindow: [],   // rolling speaker votes from the audio analyser
   voteTimer: null
@@ -2100,15 +2127,27 @@ function toggleChavrutaRecording() {
 function startChavrutaRecording() {
   if (!cv.detector) { alert('אנא בצע זיהוי קול קודם'); return; }
 
-  const rec = createRecognition(
-    text => updateChavrutaInterim(text),
-    text => finalizeChavrutaUtterance(text),
-    ()   => { if (cv.isRecording) { cv.recognition.start(); } }
-  );
-  if (!rec) return;
-  cv.recognition = rec;
+  const statusEl = document.getElementById('chavruta-rec-status');
+
+  // Use the SAME local Whisper backend as Mode 3 — far better for Hebrew +
+  // Aramaic than the browser's Web Speech API. Each ~4s window is transcribed
+  // and attributed to whoever was talking most during it.
+  cv.recorder = new WhisperRecorder({
+    windowMs: 4000,
+    onMeter: pct => { const m = document.getElementById('chavruta-meter'); if (m) m.style.width = pct + '%'; },
+    onText:  text => { if (text && text.trim()) finalizeChavrutaUtterance(text.trim()); },
+    onStatus: s => {
+      if (s === 'offline') statusEl.textContent = '⚠️ שרת התמלול אינו פעיל — הפעל את server.py';
+      else if (s === 'err') statusEl.textContent = '⚠️ שגיאת תמלול — מנסה שוב...';
+      else if (s === 'on')  statusEl.textContent = 'מקליט — מזהה דובר אוטומטית...';
+    }
+  });
+
   cv.isRecording = true;
-  rec.start();
+  cv.recorder.start().catch(e => {
+    cv.isRecording = false;
+    statusEl.textContent = '⚠️ אין גישה למיקרופון';
+  });
 
   // Continuously sample the audio to auto-detect who is speaking.
   cv.voteWindow = [];
@@ -2120,7 +2159,7 @@ function startChavrutaRecording() {
 
   const bar = document.getElementById('chavruta-rec-bar');
   bar.className = 'rec-bar active';
-  document.getElementById('chavruta-rec-status').textContent = 'מקליט — מזהה דובר אוטומטית...';
+  statusEl.textContent = 'מקליט — מזהה דובר אוטומטית...';
   document.getElementById('btn-cv-record').textContent = '⏹ עצור הקלטה';
   document.getElementById('btn-cv-record').className = 'btn btn-stop';
 }
@@ -2128,6 +2167,7 @@ function startChavrutaRecording() {
 function stopChavrutaRecording() {
   cv.isRecording = false;
   clearInterval(cv.voteTimer); cv.voteTimer = null;
+  if (cv.recorder) { try { cv.recorder.stop(); } catch(e){} cv.recorder = null; }
   if (cv.recognition) { try { cv.recognition.stop(); } catch(e){} cv.recognition = null; }
   document.getElementById('chavruta-rec-bar').className = 'rec-bar idle';
   document.getElementById('chavruta-rec-status').textContent = 'הקלטה הופסקה';
@@ -2216,7 +2256,7 @@ function buildChavrutaFlowchart() {
 function resetChavruta() {
   stopChavrutaRecording();
   if (cv.detector) { try { cv.detector.destroy(); } catch(e){} cv.detector = null; }
-  cv = { nameA:'', nameB:'', topic:'', ready:false, messages:[], detector:null, recognition:null, isRecording:false, voteWindow:[], voteTimer:null };
+  cv = { nameA:'', nameB:'', topic:'', ready:false, messages:[], detector:null, recognition:null, recorder:null, isRecording:false, voteWindow:[], voteTimer:null };
   document.getElementById('cv-last-said').style.display = 'none';
   document.getElementById('cv-live-badge').style.display = 'none';
   document.getElementById('chavruta-chat').style.display = 'none';
